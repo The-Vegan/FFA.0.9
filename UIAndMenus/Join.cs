@@ -12,7 +12,5 @@ public class Join : Button
     public override void _Pressed()
     {
         mm.MoveCameraTo(5);
-        
-        mm.postCharacterDestination = 6;
     }
 }

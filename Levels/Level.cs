@@ -53,7 +53,7 @@ public abstract class Level : TileMap
 
     //INIT METHODS
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    public void InitPlayerAndMode(byte chosenCharacter, byte gameMode, byte numberOfPlayers, byte numberOfTeams, byte chosenTeam)
+    public void InitPlayerAndMode(byte chosenCharacter, byte gameMode, byte numberOfPlayers, byte numberOfTeams)
     {
         NumberOfEntities = numberOfPlayers;
 

@@ -1,4 +1,5 @@
 ﻿
+using FFA.Empty.Empty;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -10,22 +11,21 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     protected Camera2D camera;
     protected Label multiPlayerCounter;
-
-    public byte postCharacterDestination = 3;
-
-    public byte gameMode = 0;
-    public byte playerCharacter = 0;
-    public byte teams = 1;
-    public byte chosenTeam = 0;
-    public byte numberOfEntities = 12;
-    public byte numberOfPlayers = 1;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Nodes
 
+    //Level Initialisation Variables
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    public byte gameMode = 0;
+    public byte playerCharacter = 0;
+    public byte teams = 1;
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    //Level Initialisation Variables
+
     //Network
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    //private HostServer server;
-    //private LocalClient client;
+    private Server server;
+    private Client client;
 
     public bool multiplayer = false;
     public bool hosting = false;
@@ -59,7 +59,7 @@ public class MainMenu : Control
             camera.Position = back[back.Count - 1];
             back.RemoveAt(back.Count - 1);
 
-            if (back.Count == 0) back.Add(MAINMENU);
+            if (back.Count <= 0) back.Add(MAINMENU);
             return;
         }
 
@@ -69,7 +69,6 @@ public class MainMenu : Control
         {
             case 0://MainMenu                                   
                 ResetNetworkConfig();                          
-                camera.Position = MAINMENU;
                 break;
             case 1://Solo
                 ResetNetworkConfig();
@@ -93,14 +92,14 @@ public class MainMenu : Control
                 break;
             default://Returns to MainMenu in case of error
                 ResetNetworkConfig();
-                MoveCameraTo(0);
                 break;
-
         }
-
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Camera Position
+
+    //IHM
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public void SetGame(byte mode)
     {
         this.gameMode = mode;
@@ -113,26 +112,46 @@ public class MainMenu : Control
         GD.Print("[MainMenu] playerCharacter set to : " + playerCharacter);
     }
 
-    //Network Related
-    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    public void CreateServer()
+    public void CharacterChosen()//Called through signal on the "Next" button on character screen
     {
-        throw new NotImplementedException();
+        if (server != null || client == null)
+            MoveCameraTo(3);
+        else MoveCameraTo(6);
     }
 
-    public void CreateClient(string serverIP)
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    //IHM
+
+    //Network Related
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    public bool CreateServer()
     {
-        throw new NotImplementedException();
+        try {this.server = new Server(); }
+        catch (Exception) { return false; }
+        return true;
+    }
+
+    public bool CreateClient(string serverIP)
+    {
+        try { this.client = new Client(serverIP); }
+        catch (Exception) { return false; }
+        return true;
     }
 
     public void ResetNetworkConfig()
     {
-        throw new NotImplementedException();
-    }
-
-    public void SetConnectedPlayers(byte connected)
-    {
-        multiPlayerCounter.Text = connected + "/" + numberOfPlayers + "  ";
+        if (this.server != null) 
+        { 
+            server.ShutDownServer(); 
+            this.server = null;
+        }
+        if (this.client != null) 
+        { 
+            client.ShutDownClient();
+            this.client = null;
+        }
+        GC.Collect();
+        camera.Position = MAINMENU;
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network Related

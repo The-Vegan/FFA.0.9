@@ -30,9 +30,9 @@ public class LevelLoader : Button
         loadedLevel.InitPlayerAndMode(
             mainMenu.playerCharacter,
             mainMenu.gameMode,
-            mainMenu.numberOfEntities,
-            mainMenu.teams,
-            mainMenu.chosenTeam);
+            12,
+            mainMenu.teams
+            );
     }
 
     public void LevelLoaded(bool success)

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Net;
 
 public class Host : Button
 {
@@ -13,6 +14,6 @@ public class Host : Button
     {
         mm.MoveCameraTo(1);
         mm.CreateServer();
-        mm.postCharacterDestination = 6;
-}
+        if (!mm.CreateClient(Dns.GetHostByName(Dns.GetHostName()).AddressList[0].ToString())) GD.Print("[Host] Failed to connect to localhost");
+    }
 }

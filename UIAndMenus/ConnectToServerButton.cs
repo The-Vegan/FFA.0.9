@@ -23,13 +23,12 @@ public class ConnectToServerButton : Button
         if (ipReg.IsMatch(ipTextBox.Text))
         {
             GD.Print("Regex passed");
-            mm.CreateClient(ipTextBox.Text);
 
-            if (/*Methode de connexion au serveur interne au client*/true)
+            if (mm.CreateClient(ipTextBox.Text))
             {
                 mm.MoveCameraTo(2);//Sends to character select
             }
-            else msg.SetText("can't find server");
+            else msg.SetText("can't connect to server");
         }
         else msg.SetText("invalid IP");
     }

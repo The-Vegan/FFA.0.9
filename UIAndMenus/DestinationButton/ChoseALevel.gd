@@ -1,10 +1,11 @@
-extends "res://UIAndMenus/DestinationButton/DestinationButton.gd"
+extends Button
+
+var mainMenu
 
 func _ready():
-	#._ready()
+	mainMenu = get_parent().get_parent()
 	pass
 func _pressed():
-	self.destination = mainMenu.postCharacterDestination
 	
 	mainMenu.CharacterChosen()
 	._pressed()
