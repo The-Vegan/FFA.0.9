@@ -10,7 +10,12 @@ public class MainMenu : Control
     //Nodes
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     protected Camera2D camera;
-    protected Label multiPlayerCounter;
+    protected VBoxContainer playerListBox;
+
+    protected Label ipLineEditMessage;
+
+    private LineEdit nameBox;
+    public Sprite resetNetworkConfigForm;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Nodes
 
@@ -32,6 +37,16 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
+    public override void _Ready()
+    {
+        camera = this.GetNode("Camera2D") as Camera2D;
+
+        playerListBox = this.GetNode("WaitForPlayers/VBoxContainer") as VBoxContainer;
+        ipLineEditMessage = this.GetNode("ConnectToServer/IpTextBox/Label") as Label;
+        nameBox = GetNode("Camera2D/CanvasLayer/NameBox") as LineEdit;
+
+        resetNetworkConfigForm = GetNode("Camera2D/CanvasLayer/ResetNetworkConfigForm") as Sprite;
+    }
 
     //Camera Position
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
@@ -45,13 +60,6 @@ public class MainMenu : Control
     protected Vector2 JOIN = new Vector2(-1024, 576);
     protected Vector2 WAITFOROTHERS = new Vector2(-3072, 0);
 
-
-    public override void _Ready()
-    {
-        camera = this.GetNode("Camera2D") as Camera2D;
-        multiPlayerCounter = this.GetNode("WaitForPlayers/Label") as Label;
-    }
-
     public void MoveCameraTo(sbyte destination)
     {
         if(destination == -1)
@@ -64,24 +72,24 @@ public class MainMenu : Control
         }
 
         back.Add(camera.Position);
-
+        nameBox.Visible = false;
         switch (destination)
         {
             case 0://MainMenu                                   
-                ResetNetworkConfig();                          
+                ResetNetworkConfigAndGoBackToMainMenu();                          
                 break;
             case 1://Solo
-                ResetNetworkConfig();
+                ResetNetworkConfigAndGoBackToMainMenu();
                 camera.Position = SOLO;
                 break;
             case 2://Character Select
                 camera.Position = CHARSELECT;
+                if(client != null) nameBox.Visible = true;
                 break;
             case 3://Level Select
                 camera.Position = LEVELSELECT;
                 break;
             case 4://Multi
-                ResetNetworkConfig();
                 camera.Position = MULTI;
                 break;
             case 5://Join
@@ -89,9 +97,10 @@ public class MainMenu : Control
                 break;
             case 6://WaitForHostToStartGame
                 camera.Position = WAITFOROTHERS;
+                if (client != null) nameBox.Visible = true;
                 break;
             default://Returns to MainMenu in case of error
-                ResetNetworkConfig();
+                ResetNetworkConfigAndGoBackToMainMenu();
                 break;
         }
     }
@@ -119,6 +128,19 @@ public class MainMenu : Control
         else MoveCameraTo(6);
     }
 
+    public void DisplayPlayerList(ClientData[] playerList)
+    {
+        GD.Print("[MainMenu] playerListCount : " + playerList.Length);
+        //Finds the label corresponding to players and sets thier theme to "connected"
+        for (byte i = 0; i < playerList.Length; i++)
+        {
+            CheckButton playerLabel = playerListBox.GetChild<CheckButton>(playerList[i].clientID - 1);
+            playerLabel.Pressed = true;
+            playerLabel.Text = playerList[i].name;
+            GD.Print("[MainMenu] changed button " + playerList[i].clientID);
+        }
+    }
+
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //IHM
 
@@ -138,7 +160,7 @@ public class MainMenu : Control
         return true;
     }
 
-    public void ResetNetworkConfig()
+    public void ResetNetworkConfigAndGoBackToMainMenu()
     {
         if (this.server != null) 
         { 

@@ -37,7 +37,7 @@ namespace FFA.Empty.Empty
 
         private EasyTcpClient client;
 
-        private List<ClientData> allClients = new List<ClientData> ();
+        private ClientData[] allClients = new ClientData[16];
 
 
         public Client(string connexionIP)
@@ -73,6 +73,66 @@ namespace FFA.Empty.Empty
         private void DataRecieved(object sender, Message e)
         {
             byte[] data = e.Data;
+
+            switch (data[0])
+            {
+                //<<Launch
+                case ABOUT_TO_LAUNCH: 
+                    throw new NotImplementedException();
+                case ABORT_LAUNCH: 
+                    throw new NotImplementedException();
+                case LAUNCH: 
+                    throw new NotImplementedException();
+                //Launch>>
+                //<<Config Entities/Clients
+                case SET_CLIENT_OR_ENTITY_ID:
+                    allClients = new ClientData[16];//Resets array
+
+                    byte numberOfClientRecieved = data[1];
+                    ushort offset = 2;
+                    for(byte i = 0; i < numberOfClientRecieved; i++)
+                    {
+                        if (data[offset] > 16) continue;
+                        //Extract basic data
+                        ClientData cd = new ClientData() 
+                        {
+                            clientID = data[offset],
+                            characterID = data[offset + 1],
+                            team = data[offset + 2],
+                        };
+                        offset += 3;
+                        byte stringLength = data[offset];
+                        offset++;
+                        //Extract name
+                        string nametag = Encoding.Unicode.GetString(data, offset, stringLength);
+                        offset += stringLength;
+                        cd.name = nametag;
+                        //Adds client to list
+                        allClients[cd.clientID - 1] = cd;
+                    }
+
+                    break;
+                case SEND_NAME_LIST:
+                    throw new NotImplementedException();
+                case SET_LEVEL_CONFIG: 
+                    throw new NotImplementedException();
+                //Config Entities/Clients>>
+                //<<Game work
+                case GAME_OVER:
+                    throw new NotImplementedException();
+                case GAME_SOON_OVER: 
+                    throw new NotImplementedException();
+                case SET_MOVES: 
+                    throw new NotImplementedException();
+                case SYNC: 
+                    throw new NotImplementedException();
+                case ITEM_GIVEN_BY_SERVER: 
+                    throw new NotImplementedException();
+                case BLUNDERED_BY_SERVER: 
+                    throw new NotImplementedException();
+                    //Game work>>
+            }
+
         }
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         //Event Methods
