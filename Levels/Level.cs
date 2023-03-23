@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using FFA.Empty.Empty;
+using Godot;
 using System;
 using System.Collections.Generic;
 
@@ -20,10 +21,16 @@ public abstract class Level : TileMap
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Level Variable
 
+    //Network
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    private Client client;
+    private Server server;
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    //Network
+
     //Entities Variables
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     protected byte idToGive = 0;
-    protected int NumberOfEntities = 1;
     protected List<Entity> allEntities = new List<Entity>();
     protected Dictionary<byte, Entity> idToEntity = new Dictionary<byte, Entity>();
     protected Dictionary<Vector2, Entity> coordToEntity = new Dictionary<Vector2, Entity>();
@@ -53,21 +60,10 @@ public abstract class Level : TileMap
 
     //INIT METHODS
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    public void InitPlayerAndMode(byte chosenCharacter, byte gameMode, byte numberOfPlayers, byte numberOfTeams)
+    public bool InitPlayerAndMode(byte chosenCharacter, byte gameMode, byte numberOfTeams)//Solo
     {
-        NumberOfEntities = numberOfPlayers;
-
-        //waitForOtherPlayer can also be set to false if the distant players are ready before the local player
-        
-
         switch (gameMode)//TODO : code the modes
         {
-            /*
-             0: Classic
-             1: Team
-             2: CTF
-             3: Siege
-             */
             case 0:
             default://fail-safe
                 this.Connect("checkEndingCondition", this, "ClassicEndCond");
@@ -98,15 +94,33 @@ public abstract class Level : TileMap
 
         mainPlayer = CreateEntityInstance(chosenCharacter,controllScene);//CreateEntityInstance Adds the entity to the List of all entities
 
-        if (numberOfPlayers > 16) throw new ArgumentException();
-        for(byte i = 1; i < numberOfPlayers; i++)
+        //Loads Controller outside of loop
+        PackedScene CPU = GD.Load<PackedScene>("res://Abstract/CPUController.tscn");
+        for (byte i = 1; i < 16; i++)
         {
-            CreateEntityInstance(GD.Load<PackedScene>("res://Abstract/CPUController.tscn"));
+            CreateEntityInstance(CPU);
         }
 
         GD.Print("[Level] LoadCompleted in level");
-        EmitSignal("loadComplete", true);
+        return true;
 
+    }
+
+    public bool InitPlayerAndMode(ClientData[] players,byte gameMode,byte numberOfTeams)
+    {
+        PackedScene controllerToLoad = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
+        for(byte i = 0;i < players.Length; i++)
+        {
+            if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
+            {
+                PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
+                CreateEntityInstance(players[i].characterID, controllScene);
+                continue;
+            }
+            CreateEntityInstance(players[i].characterID, controllerToLoad);
+        }
+
+        return true;
     }
     //OVERRIDE
     protected abstract void InitSpawnPointsClasssic();
@@ -118,7 +132,7 @@ public abstract class Level : TileMap
     public override void _Ready()
     {
         camera = this.GetNode("Camera2D") as Camera2D;
-        timer = this.GetNode("Timer") as Timer;
+        timer = this.GetNode<Timer>("Timer");
         this.RemoveChild(camera);
         
         Hud hud = hudScene.Instance() as Hud;
@@ -137,11 +151,10 @@ public abstract class Level : TileMap
         return timer.TimeLeft;
     }
 
-    protected void SpawnAllEntities()
+    protected void SpawnAllEntities(byte numberOfEntities)
     {
-        //PackedScene cpu = GD.Load("res://Abstract/GenericController.cs") as PackedScene;
         PackedScene cpu = GD.Load("res://Abstract/GenericController.tscn") as PackedScene;
-        for (int i = allEntities.Count; i < NumberOfEntities; i++)
+        for (int i = allEntities.Count; i < numberOfEntities; i++)
         {
            CreateEntityInstance(cpu);
         }

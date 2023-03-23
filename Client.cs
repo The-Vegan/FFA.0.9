@@ -11,6 +11,7 @@ namespace FFA.Empty.Empty
 {
     public class Client
     {
+        public byte clientID = 0;
         //Packet constants
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         /*CLIENT -> SERVER*/
@@ -23,7 +24,7 @@ namespace FFA.Empty.Empty
         private const byte ABORT_LAUNCH = 254;
         private const byte LAUNCH = 253;
         private const byte SET_CLIENT_OR_ENTITY_ID = 252;
-        private const byte SEND_NAME_LIST = 251;
+        private const byte SEND_CLIENT_LIST = 251;
         private const byte SET_LEVEL_CONFIG = 250;
         //Post launch
         private const byte GAME_OVER = 249;
@@ -38,8 +39,12 @@ namespace FFA.Empty.Empty
         private EasyTcpClient client;
 
         private ClientData[] allClients = new ClientData[16];
+        public ClientData[] GetClientData() { return allClients; }
+        private Level map;
+        private MainMenu menu;
 
-
+        //Init
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         public Client(string connexionIP)
         {
             client = new EasyTcpClient();
@@ -51,7 +56,19 @@ namespace FFA.Empty.Empty
 
             if (!client.Connect(connexionIP, 1404)) throw new ArgumentException("could not connect to server");
         }
-
+        public void SetParent(MainMenu mm)
+        {
+            menu = mm ?? throw new ArgumentException("Can't set null menu in client");
+            map = null;
+            mm.multiplayer = true;
+        }
+        public void SetParent(Level lvl)
+        {
+            map = lvl ?? throw new ArgumentException("Can't set null level in client");
+            menu = null;
+        }
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //Init
         public void ShutDownClient(){ client.Dispose(); }
         //Event Methods
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
@@ -69,7 +86,11 @@ namespace FFA.Empty.Empty
         {
             GD.Print("[Client] connected to server");
         }
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //Event Methods
 
+        //Data IN
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         private void DataRecieved(object sender, Message e)
         {
             byte[] data = e.Data;
@@ -86,15 +107,18 @@ namespace FFA.Empty.Empty
                 //Launch>>
                 //<<Config Entities/Clients
                 case SET_CLIENT_OR_ENTITY_ID:
+                    clientID = data[1];
+                    break;
+                case SEND_CLIENT_LIST:
                     allClients = new ClientData[16];//Resets array
 
                     byte numberOfClientRecieved = data[1];
                     ushort offset = 2;
-                    for(byte i = 0; i < numberOfClientRecieved; i++)
+                    for (byte i = 0; i < numberOfClientRecieved; i++)
                     {
                         if (data[offset] > 16) continue;
                         //Extract basic data
-                        ClientData cd = new ClientData() 
+                        ClientData cd = new ClientData()
                         {
                             clientID = data[offset],
                             characterID = data[offset + 1],
@@ -110,10 +134,7 @@ namespace FFA.Empty.Empty
                         //Adds client to list
                         allClients[cd.clientID - 1] = cd;
                     }
-
                     break;
-                case SEND_NAME_LIST:
-                    throw new NotImplementedException();
                 case SET_LEVEL_CONFIG: 
                     throw new NotImplementedException();
                 //Config Entities/Clients>>
@@ -134,7 +155,59 @@ namespace FFA.Empty.Empty
             }
 
         }
+
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-        //Event Methods
+        //Data IN
+        //Data OUT
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        public bool SendClientCharacterAndName(byte characterID,string name)
+        {
+            //Handles overflow
+            if (name.Length > 32) return false;
+            //creates a list with the basic informations
+            List<byte> outstream = new List<byte>() { SET_CHARACTER , clientID ,characterID};
+            //Adds the name to the byte stream
+            byte[] nameAsByte = Encoding.Unicode.GetBytes(name);
+            outstream.Add((byte)nameAsByte.Length);
+            foreach (byte b in nameAsByte) outstream.Add(b);
+            //sends
+            try { client.FireOnDataSend(outstream.ToArray()); }
+            catch (Exception)
+            {
+                GD.Print("[Client] Err, couldn't send character to server");
+                return false;
+            }
+            //Confirm success
+            return true;
+        }
+        public bool SendTeam(byte team)
+        {
+            try { client.FireOnDataSend(new byte[] { CHOSE_TEAM, clientID, team }); }
+            catch (Exception)
+            {
+                GD.Print("[Client] Err, couldn't send team to server");
+                return false;
+            }
+            return true;
+        }
+        public void SendMove(ushort packet)
+        {
+
+            for(byte i = 0; i < 128; i++)
+            {
+                try
+                {
+                    client.FireOnDataSend(new byte[] { MOVE,clientID,(byte)(packet >> 8),(byte)packet });
+                    return;
+                }
+                catch (Exception)
+                {
+                    continue;//Retries if send failed
+                }
+            }
+        }
+        
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //Data OUT
     }
 }

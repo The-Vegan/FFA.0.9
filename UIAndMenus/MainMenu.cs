@@ -173,8 +173,30 @@ public class MainMenu : Control
             this.client = null;
         }
         GC.Collect();
+        multiplayer = false;
         camera.Position = MAINMENU;
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network Related
+
+    //Level Loading
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    public void LoadLevel(PackedScene lvlToLoad)
+    {
+        if(client != null)
+        {
+            
+
+            Level loadedLevel = lvlToLoad.Instance() as Level;
+
+            loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, teams);
+
+        }
+        
+
+       
+    }
+
+    //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    //Level Loading
 }

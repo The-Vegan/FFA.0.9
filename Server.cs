@@ -24,7 +24,7 @@ namespace FFA.Empty.Empty
         private const byte ABORT_LAUNCH = 254;
         private const byte LAUNCH = 253;
         private const byte SET_CLIENT_OR_ENTITY_ID = 252;
-        private const byte SEND_NAME_LIST = 251;
+        private const byte SEND_CLIENT_LIST = 251;
         private const byte SET_LEVEL_CONFIG = 250;
         //Post launch
         private const byte GAME_OVER = 249;
@@ -121,5 +121,17 @@ namespace FFA.Empty.Empty
         }
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         //Event Methods
+
+        //SendData To Clients
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        public void SetClientID(byte clientIDToSend)
+        {
+            
+
+
+        }
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //SendData To Clients
+
     }
 }

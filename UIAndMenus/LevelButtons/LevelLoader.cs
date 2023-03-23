@@ -3,9 +3,6 @@ using System;
 
 public class LevelLoader : Button
 {
-
-    protected Level loadedLevel;
-
     [Export]
     protected PackedScene lvlToLoad;
     protected MainMenu mainMenu;
@@ -17,22 +14,14 @@ public class LevelLoader : Button
 
     public override void _Pressed()
     {
-        loadedLevel = lvlToLoad.Instance() as Level;
-
-        if (loadedLevel == null)
+        if(mainMenu.multiplayer)
         {
-            GD.Print("[LevelLoader] Err no levelToLoad");
-            return;
+            mainMenu.MoveCameraTo(6);
         }
-
-        loadedLevel.Connect("loadComplete", this, "LevelLoaded");
-
-        loadedLevel.InitPlayerAndMode(
-            mainMenu.playerCharacter,
-            mainMenu.gameMode,
-            12,
-            mainMenu.teams
-            );
+        else
+        {
+            mainMenu.LoadLevel(lvlToLoad);
+        }
     }
 
     public void LevelLoaded(bool success)
