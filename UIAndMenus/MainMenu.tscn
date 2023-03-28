@@ -22,7 +22,7 @@
 [ext_resource path="res://UIAndMenus/CharacterButton/RandomPortraint.png" type="Texture" id=20]
 [ext_resource path="res://Entities/Monstropis/MonstropisPortrait.png" type="Texture" id=21]
 [ext_resource path="res://UIAndMenus/Button Theme/arrow.png" type="Texture" id=22]
-[ext_resource path="res://UIAndMenus/PlayerCounter.gd" type="Script" id=23]
+[ext_resource path="res://UIAndMenus/DestinationButton/ChoseALevel.gd" type="Script" id=23]
 [ext_resource path="res://UIAndMenus/Host.cs" type="Script" id=24]
 [ext_resource path="res://UIAndMenus/Join.cs" type="Script" id=25]
 [ext_resource path="res://UIAndMenus/ConnectToServerButton.cs" type="Script" id=26]
@@ -536,6 +536,9 @@ margin = Rect2( 0, 12, 0, 12 )
 anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 4 )
+__meta__ = {
+"_edit_vertical_guides_": [  ]
+}
 
 [node name="Error" type="Label" parent="."]
 modulate = Color( 1, 0, 0, 0 )
@@ -758,43 +761,13 @@ margin_right = 256.0
 margin_bottom = 576.0
 theme = ExtResource( 14 )
 text = "Next "
+script = ExtResource( 23 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="CharacterSelect/ChoseALevel"]
 z_index = -1
 frames = SubResource( 170 )
 animation = "Normal"
 centered = false
-
-[node name="PlayerCounter" type="Label" parent="CharacterSelect"]
-visible = false
-margin_left = 416.0
-margin_top = 424.0
-margin_right = 560.0
-margin_bottom = 568.0
-theme = ExtResource( 14 )
-custom_colors/font_color = Color( 0, 0, 0, 1 )
-text = "8"
-script = ExtResource( 23 )
-
-[node name="Up" type="TextureButton" parent="CharacterSelect/PlayerCounter"]
-margin_left = 144.0
-margin_top = 8.0
-margin_right = 208.0
-margin_bottom = 72.0
-texture_normal = SubResource( 171 )
-texture_pressed = SubResource( 171 )
-texture_hover = SubResource( 171 )
-texture_focused = SubResource( 171 )
-
-[node name="Down" type="TextureButton" parent="CharacterSelect/PlayerCounter"]
-margin_left = 144.0
-margin_top = 72.0
-margin_right = 208.0
-margin_bottom = 136.0
-texture_normal = SubResource( 172 )
-texture_pressed = SubResource( 172 )
-texture_hover = SubResource( 172 )
-texture_focused = SubResource( 172 )
 
 [node name="LevelSelect" type="Container" parent="."]
 margin_left = -2048.0
@@ -1143,10 +1116,6 @@ theme = ExtResource( 12 )
 disabled = true
 text = "*Empty*"
 
-[connection signal="pressed" from="CharacterSelect/Back" to="CharacterSelect/PlayerCounter" method="_on_Back_pressed"]
 [connection signal="pressed" from="CharacterSelect/ChoseALevel" to="." method="CharacterChosen"]
-[connection signal="pressed" from="CharacterSelect/PlayerCounter/Up" to="CharacterSelect/PlayerCounter" method="_on_Up_pressed"]
-[connection signal="pressed" from="CharacterSelect/PlayerCounter/Down" to="CharacterSelect/PlayerCounter" method="_on_Down_pressed"]
 [connection signal="pressed" from="LevelSelect/EntityCounter/Up" to="LevelSelect/EntityCounter" method="_on_Up_pressed"]
 [connection signal="pressed" from="LevelSelect/EntityCounter/Down" to="LevelSelect/EntityCounter" method="_on_Down_pressed"]
-[connection signal="pressed" from="Multi/Host" to="CharacterSelect/PlayerCounter" method="_on_Host_pressed"]

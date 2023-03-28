@@ -121,9 +121,9 @@ public class MainMenu : Control
         GD.Print("[MainMenu] playerCharacter set to : " + playerCharacter);
     }
 
-    public void CharacterChosen()//Called through signal on the "Next" button on character screen
+    public void CharacterChosen()//Called from the "Next" button on character screen
     {
-        if (server != null || client == null)
+        if (server != null || client == null)//If this is localhost OR if this is solo
             MoveCameraTo(3);
         else MoveCameraTo(6);
     }
@@ -185,8 +185,6 @@ public class MainMenu : Control
     {
         if(client != null)
         {
-            
-
             Level loadedLevel = lvlToLoad.Instance() as Level;
 
             loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, teams);

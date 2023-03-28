@@ -43,9 +43,6 @@ public abstract class Level : TileMap
     protected Entity mainPlayer;
     
     protected PackedScene atkScene = GD.Load("res://Abstract/Attack.tscn") as PackedScene;
-    
-    [Signal]
-    protected delegate void loadComplete(bool success);
 
     [Signal]
     protected delegate void checkEndingCondition();
@@ -61,6 +58,44 @@ public abstract class Level : TileMap
     //INIT METHODS
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public bool InitPlayerAndMode(byte chosenCharacter, byte gameMode, byte numberOfTeams)//Solo
+    {
+        PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
+
+        InitGameMode(gameMode, numberOfTeams);
+
+        mainPlayer = CreateEntityInstance(chosenCharacter,controllScene, "bob");//CreateEntityInstance Adds the entity to the List of all entities
+
+        //Loads Controller outside of loop
+        PackedScene CPU = GD.Load<PackedScene>("res://Abstract/CPUController.tscn");
+        for (byte i = 1; i < 16; i++)
+        {
+            CreateEntityInstance(CPU,"bob");
+        }
+        GD.Print("[Level] LoadCompleted in level");
+        return true;
+
+    }
+
+    public bool InitPlayerAndMode(ClientData[] players,byte gameMode,byte numberOfTeams)
+    {
+        InitGameMode(gameMode, numberOfTeams);
+
+        PackedScene controllerToLoad = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
+        for(byte i = 0;i < players.Length; i++)
+        {
+            if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
+            {
+                PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
+                CreateEntityInstance(players[i].characterID, controllScene, "bob");
+                continue;
+            }
+            CreateEntityInstance(players[i].characterID, controllerToLoad,"bob");
+        }
+
+        return true;
+    }
+
+    protected void InitGameMode(byte gameMode, byte numberOfTeams)
     {
         switch (gameMode)//TODO : code the modes
         {
@@ -90,38 +125,8 @@ public abstract class Level : TileMap
                 GD.Print("[Level] Siege");
                 break;
         }
-        PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
-
-        mainPlayer = CreateEntityInstance(chosenCharacter,controllScene);//CreateEntityInstance Adds the entity to the List of all entities
-
-        //Loads Controller outside of loop
-        PackedScene CPU = GD.Load<PackedScene>("res://Abstract/CPUController.tscn");
-        for (byte i = 1; i < 16; i++)
-        {
-            CreateEntityInstance(CPU);
-        }
-
-        GD.Print("[Level] LoadCompleted in level");
-        return true;
-
     }
 
-    public bool InitPlayerAndMode(ClientData[] players,byte gameMode,byte numberOfTeams)
-    {
-        PackedScene controllerToLoad = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
-        for(byte i = 0;i < players.Length; i++)
-        {
-            if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
-            {
-                PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
-                CreateEntityInstance(players[i].characterID, controllScene);
-                continue;
-            }
-            CreateEntityInstance(players[i].characterID, controllerToLoad);
-        }
-
-        return true;
-    }
     //OVERRIDE
     protected abstract void InitSpawnPointsClasssic();
     protected abstract void InitSpawnPointsTeam(int nbrOfTeams);
@@ -156,7 +161,7 @@ public abstract class Level : TileMap
         PackedScene cpu = GD.Load("res://Abstract/GenericController.tscn") as PackedScene;
         for (int i = allEntities.Count; i < numberOfEntities; i++)
         {
-           CreateEntityInstance(cpu);
+           CreateEntityInstance(cpu,"bob");
         }
         for (int i = 0; i < allEntities.Count; i++)
         {
@@ -169,11 +174,11 @@ public abstract class Level : TileMap
 
     //ENTITY RELATED METHODS
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    protected Entity CreateEntityInstance(PackedScene pcs)
+    protected Entity CreateEntityInstance(PackedScene pcs,string nametag)
     {
-        return CreateEntityInstance(rand.Next(1,4), pcs);//Creates random entity
+        return CreateEntityInstance(rand.Next(1,4), pcs, nametag);//Creates random entity
     }
-    protected Entity CreateEntityInstance(int entityID,PackedScene controllScene)
+    protected Entity CreateEntityInstance(int entityID,PackedScene controllScene,string nametag)
     {
         Entity playerEntity;
         //Selects correct entity from parameter ID
@@ -193,7 +198,7 @@ public abstract class Level : TileMap
                 break;
 
             default://Random
-                return CreateEntityInstance(rand.Next(1, 4), controllScene);
+                return CreateEntityInstance(rand.Next(1, 4), controllScene,nametag);
 
         }//End of characters switch statement
 
@@ -216,7 +221,7 @@ public abstract class Level : TileMap
         } while (false);
 
 
-        playerEntity.Init(this, controllScene,"bob",idToGive);
+        playerEntity.Init(this, controllScene,nametag,idToGive);
         this.AddChild(playerEntity);
 
         return playerEntity;

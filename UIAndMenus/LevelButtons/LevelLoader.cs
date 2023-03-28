@@ -23,19 +23,4 @@ public class LevelLoader : Button
             mainMenu.LoadLevel(lvlToLoad);
         }
     }
-
-    public void LevelLoaded(bool success)
-    {
-        if (success)
-        {
-            GetTree().Root.AddChild(loadedLevel);
-            mainMenu.QueueFree();
-        }
-        else
-        {
-            loadedLevel.QueueFree();
-            mainMenu.MoveCameraTo(0);
-            GD.Print("[LevelLoader] Err LOADING LEVEL FAILED");
-        }
-    }
 }
