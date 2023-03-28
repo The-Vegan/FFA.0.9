@@ -185,8 +185,6 @@ public class MainMenu : Control
     {
         if(client != null)
         {
-            
-
             Level loadedLevel = lvlToLoad.Instance() as Level;
 
             loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, teams);
