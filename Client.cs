@@ -54,7 +54,7 @@ namespace FFA.Empty.Empty
             client.OnConnect += Connected;
             client.OnError += InternalClientError;
 
-            if (!client.Connect(connexionIP, 1404)) throw new ArgumentException("could not connect to server");
+            client.Connect(connexionIP, 1404);
         }
         public void SetParent(MainMenu mm)
         {
@@ -75,11 +75,17 @@ namespace FFA.Empty.Empty
         private void InternalClientError(object sender, Exception e)
         {
             GD.Print("[Client] internal client error, shutting down");
+
+            try { client.Dispose(); } catch (Exception) { }
+
+            menu?.ResetNetworkConfigAndGoBackToMainMenu();
         }
 
         private void Disconnected(object sender, EasyTcpClient e)
         {
             GD.Print("[Client] disconnected from server");
+            try { client.Dispose(); } catch (Exception) { }
+            menu?.ResetNetworkConfigAndGoBackToMainMenu();
         }
 
         private void Connected(object sender, EasyTcpClient e)
@@ -110,29 +116,21 @@ namespace FFA.Empty.Empty
                     clientID = data[1];
                     break;
                 case SEND_CLIENT_LIST:
+                    GD.Print("[Client] SEND_CLIENT_LIST instruction recieved ");
                     allClients = new ClientData[16];//Resets array
 
                     byte numberOfClientRecieved = data[1];
                     ushort offset = 2;
-                    for (byte i = 0; i < numberOfClientRecieved; i++)
-                    {
-                        if (data[offset] > 16) continue;
-                        //Extract basic data
-                        ClientData cd = new ClientData()
+
+                    for (byte i = 0; i < numberOfClientRecieved;i++){
+                        try
                         {
-                            clientID = data[offset],
-                            characterID = data[offset + 1],
-                            team = data[offset + 2],
-                        };
-                        offset += 3;
-                        byte stringLength = data[offset];
-                        offset++;
-                        //Extract name
-                        string nametag = Encoding.Unicode.GetString(data, offset, stringLength);
-                        offset += stringLength;
-                        cd.name = nametag;
-                        //Adds client to list
-                        allClients[cd.clientID - 1] = cd;
+                            ClientData c = ClientDataFromBytes(data, offset);
+                            GD.Print("[Client] Name : " + c.name);
+                            allClients[c.clientID - 1] = c;
+                            offset += (ushort)(4 + (c.name.Length * 2));
+                        }
+                        catch (IndexOutOfRangeException) { GD.Print("[Client] Failed to read all client, read " + (i-1) + " out of " + numberOfClientRecieved); break; }
                     }
                     break;
                 case SET_LEVEL_CONFIG: 
@@ -165,12 +163,18 @@ namespace FFA.Empty.Empty
             //Handles overflow
             if (name.Length > 32) return false;
             //creates a list with the basic informations
-            List<byte> outstream = new List<byte>() { SET_CHARACTER , clientID ,characterID};
-            //Adds the name to the byte stream
-            byte[] nameAsByte = Encoding.Unicode.GetBytes(name);
-            outstream.Add((byte)nameAsByte.Length);
-            foreach (byte b in nameAsByte) outstream.Add(b);
-            //sends
+            
+            ClientData c = new ClientData();
+            c.clientID = this.clientID;
+            c.characterID = characterID;
+            c.name = name;
+
+            byte[] serializedData = c.ToBytes();
+
+            byte[] outstream = new byte[1 + serializedData.Length];
+            outstream[0] = SET_CHARACTER;
+            for(byte i = 1; i < serializedData.Length; i++) outstream[i] = serializedData[i -1];
+
             try { client.FireOnDataSend(outstream.ToArray()); }
             catch (Exception)
             {
@@ -206,8 +210,55 @@ namespace FFA.Empty.Empty
                 }
             }
         }
-        
+
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         //Data OUT
+
+
+        //NetworkStruct Generator
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        public ClientData ClientDataFromBytes(byte[] serializedClientData, int offset)
+        {
+            ClientData c = new ClientData();
+
+            c.clientID = serializedClientData[offset];
+            c.characterID = serializedClientData[offset + 1];
+            c.team = serializedClientData[offset + 2];
+
+            c.name = Encoding.Unicode.GetString(serializedClientData, (offset + 4), serializedClientData[offset + 3]);
+
+
+            return c;
+        }
+
+        public EntitySync ESyncFromBytes(byte[] serializedSyncData, int offset)
+        {
+            EntitySync es = new EntitySync();
+
+            es.health = (short)((serializedSyncData[offset] << 8) + serializedSyncData[offset + 1]);
+            es.itemBar = serializedSyncData[offset + 2];
+            es.blunderBar = serializedSyncData[offset + 3];
+            es.heldItem = serializedSyncData[offset + 4];
+
+            es.coordinate = new Vector2(serializedSyncData[offset + 5], serializedSyncData[offset + 6]);
+
+            es.stun = serializedSyncData[offset + 7];
+            es.blundered = (serializedSyncData[offset + 8] != 0);
+            es.cooldown = serializedSyncData[offset + 9];
+
+            return es;
+        }
+
+        public DamageTileSync DamageTileSyncFromBytes(byte[] data, int offset)
+        {
+            DamageTileSync ret = new DamageTileSync();
+            ret.sourceID = data[offset];
+            ret.damage = (short)((data[offset + 1] << 8) + data[offset + 2]);
+
+            return ret;
+        }
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //NetworkStruct Generator
+
     }
 }

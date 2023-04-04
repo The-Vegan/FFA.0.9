@@ -22,7 +22,7 @@ public class ConnectToServerButton : Button
 
         if (ipReg.IsMatch(ipTextBox.Text))
         {
-            GD.Print("Regex passed");
+            GD.Print("[ConnectToServerButton] Regex passed");
 
             if (mm.CreateClient(ipTextBox.Text))
             {
