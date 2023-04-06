@@ -16,6 +16,15 @@ namespace FFA.Empty.Empty
         public byte team;
         public string name;
 
+        public static ClientData FromBytes(byte[] bytes,int offset)
+        {
+            ClientData ret = new ClientData();
+
+
+
+            return ret;
+        }
+
         public byte[] ToBytes()
         {
             byte[] nameAsByte = Encoding.Unicode.GetBytes(name);
@@ -49,7 +58,23 @@ namespace FFA.Empty.Empty
         public byte stun;
         public bool blundered;
         public byte cooldown;
+        public static EntitySync ESyncFromBytes(byte[] serializedSyncData, int offset)
+        {
+            EntitySync es = new EntitySync();
 
+            es.health = (short)((serializedSyncData[offset] << 8) + serializedSyncData[offset + 1]);
+            es.itemBar = serializedSyncData[offset + 2];
+            es.blunderBar = serializedSyncData[offset + 3];
+            es.heldItem = serializedSyncData[offset + 4];
+
+            es.coordinate = new Vector2(serializedSyncData[offset + 5], serializedSyncData[offset + 6]);
+
+            es.stun = serializedSyncData[offset + 7];
+            es.blundered = (serializedSyncData[offset + 8] != 0);
+            es.cooldown = serializedSyncData[offset + 9];
+
+            return es;
+        }
         public byte[] ToBytes()
         {
             byte[] ret = new byte[10];
@@ -75,7 +100,15 @@ namespace FFA.Empty.Empty
 
         public byte sourceID;
         public short damage;
-        
+
+        public static DamageTileSync DamageTileSyncFromBytes(byte[] data, int offset)
+        {
+            DamageTileSync ret = new DamageTileSync();
+            ret.sourceID = data[offset];
+            ret.damage = (short)((data[offset + 1] << 8) + data[offset + 2]);
+
+            return ret;
+        }
         public byte[] ToBytes() { return new byte[] { sourceID, (byte)(damage >> 8), (byte)damage }; }
 
     }

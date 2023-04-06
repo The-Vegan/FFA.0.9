@@ -125,7 +125,7 @@ namespace FFA.Empty.Empty
                     for (byte i = 0; i < numberOfClientRecieved;i++){
                         try
                         {
-                            ClientData c = ClientDataFromBytes(data, offset);
+                            ClientData c = ClientData.FromBytes(data, offset);
                             GD.Print("[Client] Name : " + c.name);
                             allClients[c.clientID - 1] = c;
                             offset += (ushort)(4 + (c.name.Length * 2));
@@ -214,51 +214,6 @@ namespace FFA.Empty.Empty
         //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
         //Data OUT
 
-
-        //NetworkStruct Generator
-        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-        public ClientData ClientDataFromBytes(byte[] serializedClientData, int offset)
-        {
-            ClientData c = new ClientData();
-
-            c.clientID = serializedClientData[offset];
-            c.characterID = serializedClientData[offset + 1];
-            c.team = serializedClientData[offset + 2];
-
-            c.name = Encoding.Unicode.GetString(serializedClientData, (offset + 4), serializedClientData[offset + 3]);
-
-
-            return c;
-        }
-
-        public EntitySync ESyncFromBytes(byte[] serializedSyncData, int offset)
-        {
-            EntitySync es = new EntitySync();
-
-            es.health = (short)((serializedSyncData[offset] << 8) + serializedSyncData[offset + 1]);
-            es.itemBar = serializedSyncData[offset + 2];
-            es.blunderBar = serializedSyncData[offset + 3];
-            es.heldItem = serializedSyncData[offset + 4];
-
-            es.coordinate = new Vector2(serializedSyncData[offset + 5], serializedSyncData[offset + 6]);
-
-            es.stun = serializedSyncData[offset + 7];
-            es.blundered = (serializedSyncData[offset + 8] != 0);
-            es.cooldown = serializedSyncData[offset + 9];
-
-            return es;
-        }
-
-        public DamageTileSync DamageTileSyncFromBytes(byte[] data, int offset)
-        {
-            DamageTileSync ret = new DamageTileSync();
-            ret.sourceID = data[offset];
-            ret.damage = (short)((data[offset + 1] << 8) + data[offset + 2]);
-
-            return ret;
-        }
-        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-        //NetworkStruct Generator
 
     }
 }
