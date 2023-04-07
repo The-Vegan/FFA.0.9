@@ -14,7 +14,7 @@ public class MainMenu : Control
 
     protected Label ipLineEditMessage;
 
-    private LineEdit nameBox;
+    public LineEdit nameBox;
     public Sprite resetNetworkConfigForm;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Nodes
@@ -23,7 +23,7 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public byte gameMode = 0;
     public byte playerCharacter = 0;
-    public byte teams = 1;
+    public byte numberOfTeams = 1;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Level Initialisation Variables
 
@@ -187,7 +187,7 @@ public class MainMenu : Control
         {
             Level loadedLevel = lvlToLoad.Instance() as Level;
 
-            loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, teams);
+            loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, numberOfTeams);
 
         }
         

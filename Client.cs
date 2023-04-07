@@ -215,5 +215,20 @@ namespace FFA.Empty.Empty
         //Data OUT
 
 
+        //Local Variables set from distant
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        public void SetLoacalClient(ClientData client)
+        {
+            this.clientID = client.clientID;
+            this.menu.playerCharacter = client.characterID;
+            this.menu.nameBox.Text = client.name;
+
+
+        }
+
+
+        //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+        //Local Variables set from distant
+
     }
 }
