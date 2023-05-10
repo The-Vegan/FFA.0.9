@@ -12,6 +12,8 @@ public class GenericController : Node2D
     {
         entity = this.GetParent() as Entity;
     }
-
-
 }
+
+
+
+

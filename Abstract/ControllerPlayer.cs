@@ -15,36 +15,35 @@ public class ControllerPlayer : GenericController
     protected const short RESTING = 0b1000000000;
 
     public override void _Process(float _delta)
-  {
-        if (ScanInput()) 
-        { 
+    {
+        if (ScanInput())
+        {
             entity.SetPacket(packet);
             packet = 0;
         }
-  }
+    }
     private bool ScanInput()
     {
-        
         bool pressed = false;
-        if (Input.IsActionJustPressed("MoveDown")) 
-        { 
+        if (Input.IsActionJustPressed("MoveDown"))
+        {
             packet |= DOWN_MOVE;
             pressed = true;
         }
-            
-        if (Input.IsActionJustPressed("MoveLeft")) 
+
+        if (Input.IsActionJustPressed("MoveLeft"))
         {
             packet |= LEFT_MOVE;
             pressed = true;
         }
-            
-        if (Input.IsActionJustPressed("MoveRight")) 
+
+        if (Input.IsActionJustPressed("MoveRight"))
         {
             packet |= RIGHT_MOVE;
             pressed = true;
         }
-            
-        if (Input.IsActionJustPressed("MoveUp")) 
+
+        if (Input.IsActionJustPressed("MoveUp"))
         {
             packet |= UP_MOVE;
             pressed = true;

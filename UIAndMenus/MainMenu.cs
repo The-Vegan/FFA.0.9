@@ -1,9 +1,9 @@
-﻿
-using FFA.Empty.Empty;
+﻿using FFA.Empty.Empty.Network.Client;
+using FFA.Empty.Empty.Network.Server;
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Net;
+
 
 public class MainMenu : Control
 {
@@ -29,8 +29,8 @@ public class MainMenu : Control
 
     //Network
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    private Server server;
-    private Client client;
+    private LocalClient client;
+    private HostServer server;
 
     public bool multiplayer = false;
     public bool hosting = false;
@@ -123,12 +123,12 @@ public class MainMenu : Control
 
     public void CharacterChosen()//Called from the "Next" button on character screen
     {
-        if (server != null || client == null)//If this is localhost OR if this is solo
+        if (server != null || client == null)//If this is localhost OR if this is solo, choses level
             MoveCameraTo(3);
         else MoveCameraTo(6);
     }
-
-    public void DisplayPlayerList(ClientData[] playerList)
+    
+    public void DisplayPlayerList(PlayerInfo[] playerList)
     {
         GD.Print("[MainMenu] playerListCount : " + playerList.Length);
         //Finds the label corresponding to players and sets thier theme to "connected"
@@ -140,7 +140,7 @@ public class MainMenu : Control
             GD.Print("[MainMenu] changed button " + playerList[i].clientID);
         }
     }
-
+    
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //IHM
 
@@ -148,29 +148,29 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public bool CreateServer()
     {
-        try {this.server = new Server(); }
-        catch (Exception) { return false; }
+        //try {this.server = new Server(); }
+        //catch (Exception) { return false; }
         return true;
     }
 
     public bool CreateClient(string serverIP)
     {
-        try { this.client = new Client(serverIP); }
-        catch (Exception) { return false; }
+        //try { this.client = new Client(serverIP); }
+        //catch (Exception) { return false; }
         return true;
     }
 
     public void ResetNetworkConfigAndGoBackToMainMenu()
     {
-        if (this.server != null) 
+        //if (this.server != null) 
         { 
-            server.ShutDownServer(); 
-            this.server = null;
+        //    server.ShutDownServer(); 
+        //    this.server = null;
         }
-        if (this.client != null) 
+        //if (this.client != null) 
         { 
-            client.ShutDownClient();
-            this.client = null;
+        //    client.ShutDownClient();
+        //    this.client = null;
         }
         GC.Collect();
         multiplayer = false;
@@ -183,16 +183,24 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public void LoadLevel(PackedScene lvlToLoad)
     {
-        if(client != null)
+        if (client != null)
         {
             Level loadedLevel = lvlToLoad.Instance() as Level;
 
-            loadedLevel.InitPlayerAndMode(client.GetClientData(), gameMode, numberOfTeams);
+            loadedLevel.InitPlayerAndMode(client.GetPlayersInfo(), gameMode, numberOfTeams);
 
+            GetTree().Root.AddChild(loadedLevel);
+            this.QueueFree();
         }
-        
+        else
+        {
+            Level loadedLevel = lvlToLoad.Instance() as Level;
 
-       
+            loadedLevel.InitPlayerAndMode(playerCharacter, gameMode, numberOfTeams);
+
+            GetTree().Root.AddChild(loadedLevel);
+            this.QueueFree();
+        }
     }
 
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\

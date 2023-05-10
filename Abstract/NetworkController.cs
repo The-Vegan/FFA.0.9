@@ -1,13 +1,11 @@
-using FFA.Empty.Empty;
-using Godot;
-using System;
+using FFA.Empty.Empty.Network.Client;
 
 public class NetworkController : GenericController
 {
-    private Client client;
+    private LocalClient client;
     public override void _Ready()
     { }
-    public void Init(Client cli)
+    public void Init(LocalClient cli)
     {
         this.client = cli;
     }

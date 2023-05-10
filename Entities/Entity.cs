@@ -256,14 +256,14 @@ public class Entity : AnimatedSprite
 
     private void DirectionSetter()
     {
-        if      ((packet & 0b0001) != 0) direction = "Down";
-        else if ((packet & 0b0010) != 0) direction = "Left";
-        else if ((packet & 0b0100) != 0) direction = "Right";
-        else if ((packet & 0b1000) != 0) direction = "Up";
-        else if ((packet & 0b0001_0000) != 0) direction = "Down";
+        if      ((packet & 0b0001_0000) != 0) direction = "Down";
         else if ((packet & 0b0010_0000) != 0) direction = "Left";
         else if ((packet & 0b0100_0000) != 0) direction = "Right";
         else if ((packet & 0b1000_0000) != 0) direction = "Up";
+        else if ((packet & 0b0001) != 0) direction = "Down";
+        else if ((packet & 0b0010) != 0) direction = "Left";
+        else if ((packet & 0b0100) != 0) direction = "Right";
+        else if ((packet & 0b1000) != 0) direction = "Up";
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //GESTION DES ANIMATIONS

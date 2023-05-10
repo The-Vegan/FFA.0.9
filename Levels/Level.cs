@@ -1,4 +1,5 @@
-﻿using FFA.Empty.Empty;
+﻿using FFA.Empty.Empty.Network.Client;
+using FFA.Empty.Empty.Network.Server;
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -23,8 +24,8 @@ public abstract class Level : TileMap
 
     //Network
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    private Client client;
-    private Server server;
+    private LocalClient client;
+    private HostServer server;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
@@ -75,8 +76,8 @@ public abstract class Level : TileMap
         return true;
 
     }
-
-    public bool InitPlayerAndMode(ClientData[] players,byte gameMode,byte numberOfTeams)
+    
+    public bool InitPlayerAndMode(PlayerInfo[] players,byte gameMode,byte numberOfTeams)
     {
         InitGameMode(gameMode, numberOfTeams);
 
@@ -86,13 +87,26 @@ public abstract class Level : TileMap
             if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
             {
                 PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
-                CreateEntityInstance(players[i].characterID, controllScene, "bob");
-                continue;
+                CreateEntityInstance(players[i].characterID, controllScene, players[i].name);
             }
-            CreateEntityInstance(players[i].characterID, controllerToLoad,"bob");
+            else//If the player is distant, use the networkController
+            {
+                CreateEntityInstance(players[i].characterID, controllerToLoad, players[i].name);
+            }
+            
         }
 
         return true;
+    }
+
+    public void InitNetwork(HostServer ser,LocalClient cli)
+    {
+        this.server = ser;
+        this.client = cli;
+    }
+    public void InitNetwork( LocalClient cli)
+    {
+        this.client = cli;
     }
 
     protected void InitGameMode(byte gameMode, byte numberOfTeams)

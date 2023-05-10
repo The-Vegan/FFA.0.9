@@ -1,5 +1,4 @@
 using Godot;
-using System;
 
 public class LevelLoader : Button
 {
@@ -14,12 +13,15 @@ public class LevelLoader : Button
 
     public override void _Pressed()
     {
+        
         if(mainMenu.multiplayer)
         {
+            GD.Print("[LevelLoader] multiplayer");
             mainMenu.MoveCameraTo(6);
         }
         else
         {
+            GD.Print("[LevelLoader] Solo");
             mainMenu.LoadLevel(lvlToLoad);
         }
     }
