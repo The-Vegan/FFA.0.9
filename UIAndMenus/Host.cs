@@ -13,7 +13,11 @@ public class Host : Button
     public override void _Pressed()
     {
         mm.MoveCameraTo(1);
-        mm.CreateServer();
+        if (!mm.CreateServer())
+        {
+            GD.Print("[Host] Failed to create server");
+            return;
+        }
         if (!mm.CreateClient(Dns.GetHostByName(Dns.GetHostName()).AddressList[0].ToString())) GD.Print("[Host] Failed to connect to localhost");
     }
 }
