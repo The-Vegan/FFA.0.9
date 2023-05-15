@@ -9,13 +9,19 @@ public class MainMenu : Control
 {
     //Nodes
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
+    [Export]
     protected Camera2D camera;
+    [Export]
     protected VBoxContainer playerListBox;
-
+    [Export]
     protected Label ipLineEditMessage;
-
+    [Export]
     public LineEdit nameBox;
+
+    [Export]
     public Sprite resetNetworkConfigForm;
+    [Export]
+    protected Button launchButton;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Nodes
 
@@ -44,6 +50,8 @@ public class MainMenu : Control
         playerListBox = this.GetNode("WaitForPlayers/VBoxContainer") as VBoxContainer;
         ipLineEditMessage = this.GetNode("ConnectToServer/IpTextBox/Label") as Label;
         nameBox = GetNode("Camera2D/CanvasLayer/NameBox") as LineEdit;
+
+        launchButton = GetNode("WaitForPlayers/Start") as Button;
 
         resetNetworkConfigForm = GetNode("Camera2D/CanvasLayer/ResetNetworkConfigForm") as Sprite;
     }
@@ -97,6 +105,7 @@ public class MainMenu : Control
                 break;
             case 6://WaitForHostToStartGame
                 camera.Position = WAITFOROTHERS;
+                launchButton.Visible = !(server == null);
                 if (client != null) nameBox.Visible = true;
                 break;
             default://Returns to MainMenu in case of error
@@ -109,17 +118,9 @@ public class MainMenu : Control
 
     //IHM
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    public void SetGame(byte mode)
-    {
-        this.gameMode = mode;
-        GD.Print("[MainMenu] gameMode set to : " + gameMode);
-    }
-
-    public void SetCharacter(byte character)
-    {
-        playerCharacter = character;
-        GD.Print("[MainMenu] playerCharacter set to : " + playerCharacter);
-    }
+    public void SetGame(byte mode){ this.gameMode = mode; }
+    public void SetCharacter(byte character){ playerCharacter = character; }
+    public void SetPlayerName(string name) { client?.SendCharIDAndName(name); }
 
     public void CharacterChosen()//Called from the "Next" button on character screen
     {
@@ -130,13 +131,18 @@ public class MainMenu : Control
     
     public void DisplayPlayerList(PlayerInfo[] playerList)
     {
-        GD.Print("[MainMenu] playerListCount : " + playerList.Length);
-        //Finds the label corresponding to players and sets thier theme to "connected"
+        //Finds the label corresponding to players and sets thier state to "connected"
         for (byte i = 0; i < playerList.Length; i++)
         {
-            CheckButton playerLabel = playerListBox.GetChild<CheckButton>(playerList[i].clientID - 1);
+            
+            CheckButton playerLabel = playerListBox.GetChild<CheckButton>(i);
+            if (playerList[i] == null)
+            {
+                playerLabel.Pressed = false;
+                continue;
+            }
             playerLabel.Pressed = true;
-            playerLabel.Text = playerList[i].name;
+            playerLabel.Text = playerList[i].ToString();
             GD.Print("[MainMenu] changed button " + playerList[i].clientID);
         }
     }
@@ -148,32 +154,38 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public bool CreateServer()
     {
-        //try {this.server = new Server(); }
-        //catch (Exception) { return false; }
+        try {this.server = new HostServer(); }
+        catch (Exception) { return false; }
         return true;
     }
 
     public bool CreateClient(string serverIP)
     {
-        //try { this.client = new Client(serverIP); }
-        //catch (Exception) { return false; }
+        try 
+        { 
+            this.client = new LocalClient(serverIP); 
+            client.SetParent(this);
+            multiplayer = true;
+        }
+        catch (Exception) { return false; }
         return true;
     }
 
     public void ResetNetworkConfigAndGoBackToMainMenu()
     {
-        //if (this.server != null) 
+        if (this.server != null) 
         { 
-        //    server.ShutDownServer(); 
-        //    this.server = null;
+            server.Terminate(); 
+            this.server = null;
         }
-        //if (this.client != null) 
+        if (this.client != null) 
         { 
-        //    client.ShutDownClient();
-        //    this.client = null;
+            client.Disconnect();
+            this.client = null;
         }
         GC.Collect();
         multiplayer = false;
+        GD.Print("[MainMenu] Reset Network Config");
         camera.Position = MAINMENU;
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\

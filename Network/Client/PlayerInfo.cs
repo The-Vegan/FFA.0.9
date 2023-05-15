@@ -1,5 +1,6 @@
 ﻿using Godot;
 using System;
+using System.Numerics;
 using System.Text;
 
 
@@ -17,8 +18,9 @@ namespace FFA.Empty.Empty.Network.Client
 
             if (nameLength != 0)
             {
-                string name = Encoding.Unicode.GetString(array, (offset + 4), nameLength * 2);
-                this.name = name;
+                string nameFromByte = Encoding.Unicode.GetString(array, (offset + 4), nameLength * 2);
+                this.name = nameFromByte;
+                GD.Print("[PlayerInfo] Name : " + nameFromByte);
             }
 
         }
@@ -33,7 +35,7 @@ namespace FFA.Empty.Empty.Network.Client
             byte[] stream;
             if (this.name == null)
             {
-                stream = new byte[3];
+                stream = new byte[4];
                 stream[0] = this.clientID;
                 stream[1] = this.characterID;
                 stream[2] = this.team;
@@ -41,13 +43,13 @@ namespace FFA.Empty.Empty.Network.Client
             }
             else
             {
-                stream = new byte[3 + (this.name.Length * 2)];
+                stream = new byte[4 + (this.name.Length * 2)];
                 stream[0] = this.clientID;
                 stream[1] = this.characterID;
                 stream[2] = this.team;
                 stream[3] = (byte)this.name.Length;
                 byte[] nameAsByte = Encoding.Unicode.GetBytes(name);
-                for (byte i = 0; i < nameAsByte.Length; i++) stream[3 + i] = nameAsByte[i];
+                for (byte i = 0; i < nameAsByte.Length; i++) stream[4 + i] = nameAsByte[i];
             }
 
             return stream;
@@ -78,7 +80,6 @@ namespace FFA.Empty.Empty.Network.Client
                 offset += (ushort)plyrAsByte.Length;
 
             }
-            GD.Print("[PlayerInfo] Server found " + output[1] + " clients in list");
             return output;
         }
 
@@ -93,10 +94,12 @@ namespace FFA.Empty.Empty.Network.Client
             for (byte i = 0; i < nmbrOfPlayer; i++)
             {
                 PlayerInfo player = new PlayerInfo(data, offset);
-                if (player.name == null) offset += 3;
-                else offset += (ushort)(3 + (player.name.Length * 2));
+                if (player.name == null) offset += 4;
+                else offset += (ushort)(4 + (player.name.Length * 2));
 
                 retArray[player.clientID - 1] = player;
+
+                
             }
 
             return retArray;
