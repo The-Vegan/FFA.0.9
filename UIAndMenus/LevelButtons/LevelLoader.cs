@@ -18,6 +18,7 @@ public class LevelLoader : Button
         {
             GD.Print("[LevelLoader] multiplayer");
             mainMenu.MoveCameraTo(6);
+            mainMenu.bufferLvlToLoad = lvlToLoad;
         }
         else
         {

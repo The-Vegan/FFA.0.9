@@ -7,7 +7,7 @@ public class Entity : AnimatedSprite
     //DEPENDENCIES
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     protected PackedScene controllerScene;
-    protected GenericController controller;
+    public GenericController controller;
     protected Level map;
     protected Tween tween;
     protected AnimationPlayer animPlayer;

@@ -26,6 +26,8 @@ public abstract class Level : TileMap
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     private LocalClient client;
     private HostServer server;
+
+    private NetworkController[] distantPlayerControllers = new NetworkController[16];
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
@@ -77,26 +79,38 @@ public abstract class Level : TileMap
 
     }
     
-    public bool InitPlayerAndMode(PlayerInfo[] players,byte gameMode,byte numberOfTeams)
+    public Dictionary<byte,Vector2> InitPlayerAndModeMulti(PlayerInfo[] players,byte gameMode,byte numberOfTeams)//multi
     {
+        if (players.Length > 16) throw new ArgumentException("[Level] Invalid PlayerInfo Array");
+
+        Dictionary<byte, Vector2> IDToEntity = new Dictionary<byte, Vector2>();
         InitGameMode(gameMode, numberOfTeams);
 
         PackedScene controllerToLoad = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
-        for(byte i = 0;i < players.Length; i++)
+
+        Entity entity;
+
+        
+
+        for (byte i = 0;i < players.Length; i++)
         {
             if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
             {
                 PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
-                CreateEntityInstance(players[i].characterID, controllScene, players[i].name);
+                entity = CreateEntityInstance(players[i].characterID, controllScene, players[i].name, players[i].clientID);
             }
             else//If the player is distant, use the networkController
             {
-                CreateEntityInstance(players[i].characterID, controllerToLoad, players[i].name);
+                entity = CreateEntityInstance(players[i].characterID, controllerToLoad, players[i].name, players[i].clientID);
             }
-            
+
+            Spawn(entity);
+
+            IDToEntity.Add((byte)(i + 1), entity.pos);
+
         }
 
-        return true;
+        return IDToEntity;
     }
 
     public void InitNetwork(HostServer ser,LocalClient cli)
@@ -104,7 +118,7 @@ public abstract class Level : TileMap
         this.server = ser;
         this.client = cli;
     }
-    public void InitNetwork( LocalClient cli)
+    public void InitNetwork(LocalClient cli)
     {
         this.client = cli;
     }
@@ -163,6 +177,8 @@ public abstract class Level : TileMap
         
 
         camera.Current = true;
+
+        if (client == null) timer.Start();
     }
 
     public float GetTime()
@@ -192,7 +208,7 @@ public abstract class Level : TileMap
     {
         return CreateEntityInstance(rand.Next(1,4), pcs, nametag);//Creates random entity
     }
-    protected Entity CreateEntityInstance(int entityID,PackedScene controllScene,string nametag)
+    protected Entity CreateEntityInstance(int entityID,PackedScene controllScene,string nametag)//solo
     {
         Entity playerEntity;
         //Selects correct entity from parameter ID
@@ -234,8 +250,59 @@ public abstract class Level : TileMap
         
         } while (false);
 
+        this.AddChild(playerEntity);
 
-        playerEntity.Init(this, controllScene,nametag,idToGive);
+        return playerEntity;
+    }
+    protected Entity CreateEntityInstance(int entityID, PackedScene controllScene, string nametag, int clientID)
+    {
+        Entity playerEntity;
+        //Selects correct entity from parameter ID
+        switch (entityID)
+        {
+            case 1://Pirate
+                GD.Print("[Level] Make a pirate");
+                playerEntity = pirateScene.Instance() as Pirate;
+                break;
+            case 2://♥
+                GD.Print("[Level] Make a ♥");
+                playerEntity = blahajScene.Instance() as Blahaj;
+                break;
+            case 3:
+                GD.Print("[Level] Make a monstropis");
+                playerEntity = monstropisScene.Instance() as Monstropis;
+                break;
+
+            default://Random
+                return CreateEntityInstance(rand.Next(1, 4), controllScene, nametag, clientID);
+
+        }//End of characters switch statement
+
+        //Finalizes configurations for player entity
+        allEntities.Add(playerEntity);
+        do
+        {
+            if (idToEntity.Count >= 250) throw new OverflowException("How did you even summon 250+ entities??? ;-;");
+
+            idToGive++;
+            try
+            {
+                idToEntity.Add(idToGive, playerEntity);
+            }
+            catch (ArgumentException)//Give an ID and adds it in dictionary
+            {
+                continue;
+            }
+
+        } while (false);
+
+
+        playerEntity.Init(this, controllScene, nametag, idToGive);
+        if ((playerEntity.controller.GetType() == typeof(NetworkController)) && (clientID != null))
+        {
+            distantPlayerControllers[(int)clientID - 1] = playerEntity.controller as NetworkController;
+        }
+
         this.AddChild(playerEntity);
 
         return playerEntity;
@@ -275,7 +342,7 @@ public abstract class Level : TileMap
             {
                 int randomTile = rand.Next(spawnpoints.Length);
 
-                if ((this.GetCell((int)spawnpoints[randomTile].x, (int)spawnpoints[randomTile].y) == 0) && (failures < 64))//If tile isn't occupied
+                if ((SpawnPointInoccupied(randomTile)) && (failures < 64))//If tile isn't occupied
                 {
                     entity.Moved(spawnpoints[randomTile]);
                     await ToSignal(entity.GetNode("Tween"), "tween_completed");
@@ -298,6 +365,22 @@ public abstract class Level : TileMap
         }
        
     }
+
+    private bool SpawnPointInoccupied(int randomTile)
+    {
+        Vector2 tile = spawnpoints[randomTile];
+        if ((this.GetCell((int)tile.x, (int)tile.y) != 0)) return false;
+
+        for (short yAxis = (short)(tile.y - 2); yAxis <= (short)(tile.y + 2); yAxis++)
+        {
+            for (short xAxis = (short)(tile.x - 2); xAxis <= (short)(tile.x + 2); xAxis++)
+            {
+                if (this.GetCell(xAxis, yAxis) == 3) return false;
+            }
+        }
+        return true;
+    }
+
     public void SetEntityPacket(byte entityID, short packet, float timing)
     {
         if (!idToEntity.ContainsKey(entityID))
