@@ -208,7 +208,12 @@ public class MainMenu : Control
         CountDownTimer();
         launchAborted = false;
         launchAborted = !server.BeginLaunch();
-        if (!launchAborted) server.SendStartSignalToAllClients();
+        if (!launchAborted) 
+        {
+            server.AssignRandomCharacters();
+            
+        }
+       
 
         Level LoadedLevel = bufferLvlToLoad.Instance() as Level;
         if (LoadedLevel == null)
@@ -218,7 +223,16 @@ public class MainMenu : Control
             return;
         }
 
-        Dictionary<byte, Vector2> IDToPositions = LoadedLevel.InitPlayerAndModeMulti(server.GetPlayer(), gameMode, numberOfTeams);
+        Dictionary<byte, Vector2> IDToPositions = LoadedLevel.InitPlayerAndModeMulti(gameMode, numberOfTeams);
+        if (IDToPositions == null) //error
+        {
+            ResetNetworkConfigAndGoBackToMainMenu();
+            return;
+        }
+        
+        LoadedLevel.InitNetwork(this.server, this.client);
+        server.SendStartSignalToAllClients(IDToPositions,LoadedLevel.GetLvlID());
+
 
 
     }
@@ -229,17 +243,33 @@ public class MainMenu : Control
         while (sec >= 0)
         {
             countDownLabel.Text = sec.ToString();
-            System.Threading.Thread.Sleep(250);
-            if (launchAborted) break;
-            System.Threading.Thread.Sleep(250);
-            if (launchAborted) break;
-            System.Threading.Thread.Sleep(250);
-            if (launchAborted) break;
-            System.Threading.Thread.Sleep(250);
-            if (launchAborted) break;
+            System.Threading.Thread.Sleep(250); if (launchAborted) break;
+            System.Threading.Thread.Sleep(250); if (launchAborted) break;
+            System.Threading.Thread.Sleep(250); if (launchAborted) break;
+            System.Threading.Thread.Sleep(250); if (launchAborted) break;
             sec--;
         }
         countDownLabel.Visible = false;
+    }
+
+    public void LoadMapFromID(byte mapID)
+    {
+        string mapPath;
+        switch (mapID)
+        {
+            case 1:
+                mapPath = "res://Levels/Kyomira1.tscn";
+                break;
+            case 2:
+                throw new NotImplementedException();
+            default:
+                throw new NotImplementedException();
+        }
+        Level map = GD.Load<Level>(mapPath);
+        map.InitNetwork(this.client);
+        map.InitPlayerAndModeClient();
+
+        this.QueueFree();
     }
 
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\

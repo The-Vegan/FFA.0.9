@@ -1,6 +1,7 @@
 ﻿using FFA.Empty.Empty.Network.Client;
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace FFA.Empty.Empty.Network.Server
@@ -175,18 +176,38 @@ namespace FFA.Empty.Empty.Network.Server
         }
 
 
-        public void SendStartSignalToAllClients()
+        public void SendStartSignalToAllClients(Dictionary<byte, Vector2> IDToEntity,byte lvlID)
+        {
+            byte[] stream = new byte[8_192];
+            stream[0] = LAUNCH;
+            stream[1] = lvlID;
+            for(byte i = 0; i < players.Length; i++)
+            {
+                ushort offset = (ushort)(i * 5);
+
+                stream[offset + 2] = players[i].clientID;
+
+                Vector2 pos = IDToEntity[players[i].clientID];
+
+                stream[offset + 3] = (byte)(((short)(pos.x) >> 8));
+                stream[offset + 4] = (byte)(pos.x);
+                stream[offset + 5] = (byte)(((short)(pos.y) >> 8));
+                stream[offset + 6] = (byte)(pos.y);
+            }
+
+            server.SendDataOnAllStreams(stream);
+
+        }
+
+        internal void AssignRandomCharacters()
         {
             Random r = new Random();
             for (byte i = 0; i < players.Length; i++)
             {
                 if (players[i] == null) continue;
                 if (players[i].characterID == 0 || players[i].characterID > 3) players[i].characterID = (byte)r.Next(1, 4);
-            }//assigns Random character to thoses with random character chosen
-
+            }
             UpdateNameList();
-
-
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Launch methods

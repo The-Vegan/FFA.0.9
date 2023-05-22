@@ -19,6 +19,8 @@ public abstract class Level : TileMap
     protected PackedScene hudScene = GD.Load<PackedScene>("res://UIAndMenus/HUD/Hud.tscn");
 
     protected bool teamMode = false;
+
+    public abstract byte GetLvlID();
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Level Variable
 
@@ -27,7 +29,7 @@ public abstract class Level : TileMap
     private LocalClient client;
     private HostServer server;
 
-    private NetworkController[] distantPlayerControllers = new NetworkController[16];
+    private Dictionary<byte,NetworkController> distantPlayerControllers = new Dictionary<byte, NetworkController>();
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
@@ -79,8 +81,11 @@ public abstract class Level : TileMap
 
     }
     
-    public Dictionary<byte,Vector2> InitPlayerAndModeMulti(PlayerInfo[] players,byte gameMode,byte numberOfTeams)//multi
+    public Dictionary<byte,Vector2> InitPlayerAndModeMulti(byte gameMode,byte numberOfTeams)//multi
     {
+        if (server == null) return null;
+
+        PlayerInfo[] players = server.GetPlayer();
         if (players.Length > 16) throw new ArgumentException("[Level] Invalid PlayerInfo Array");
 
         Dictionary<byte, Vector2> IDToEntity = new Dictionary<byte, Vector2>();
@@ -88,9 +93,7 @@ public abstract class Level : TileMap
 
         PackedScene controllerToLoad = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
 
-        Entity entity;
-
-        
+        Entity entity;        
 
         for (byte i = 0;i < players.Length; i++)
         {
@@ -109,20 +112,31 @@ public abstract class Level : TileMap
             IDToEntity.Add((byte)(i + 1), entity.pos);
 
         }
-
+        GC.Collect();
         return IDToEntity;
     }
 
-    public void InitNetwork(HostServer ser,LocalClient cli)
+    public void InitPlayerAndModeClient()
     {
-        this.server = ser;
-        this.client = cli;
-    }
-    public void InitNetwork(LocalClient cli)
-    {
-        this.client = cli;
+        PlayerInfo[] players = client.GetPlayersInfo();
+        PackedScene networkController = GD.Load<PackedScene>("res://Abstract/NetworkController.tscn");
+        for(byte i = 0; i < players.Length; i++)
+        {
+            if (players[i] == null) continue;
+
+            if (players[i].clientID == client.clientID)
+            {
+                PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
+                Spawn(CreateEntityInstance(players[i].characterID, controllScene, players[i].name, players[i].clientID));
+            }
+            else Spawn(CreateEntityInstance(players[i].characterID, networkController, players[i].name, players[i].clientID));
+        }
+
+
     }
 
+    public void InitNetwork(HostServer ser,LocalClient cli) { this.server = ser; this.client = cli; }
+    public void InitNetwork(LocalClient cli) { this.client = cli; }
     protected void InitGameMode(byte gameMode, byte numberOfTeams)
     {
         switch (gameMode)//TODO : code the modes
@@ -199,6 +213,12 @@ public abstract class Level : TileMap
         }
 
     }
+
+
+    public void InitPlayerCoordinates(Dictionary<byte, Vector2> IDToCoords)
+    {
+
+    }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //INIT METHODS
 
@@ -254,7 +274,7 @@ public abstract class Level : TileMap
 
         return playerEntity;
     }
-    protected Entity CreateEntityInstance(int entityID, PackedScene controllScene, string nametag, int clientID)
+    protected Entity CreateEntityInstance(int entityID, PackedScene controllScene, string nametag, byte clientID)
     {
         Entity playerEntity;
         //Selects correct entity from parameter ID
@@ -298,9 +318,9 @@ public abstract class Level : TileMap
 
 
         playerEntity.Init(this, controllScene, nametag, idToGive);
-        if ((playerEntity.controller.GetType() == typeof(NetworkController)) && (clientID != null))
+        if ((playerEntity.controller.GetType() == typeof(NetworkController)) && (clientID != 0))
         {
-            distantPlayerControllers[(int)clientID - 1] = playerEntity.controller as NetworkController;
+            distantPlayerControllers.Add(clientID, playerEntity.controller as NetworkController);
         }
 
         this.AddChild(playerEntity);
@@ -505,7 +525,6 @@ public abstract class Level : TileMap
         
         for (int i= 0; i < allEntities.Count; i++)
         {
-
             try
             {
                 coordToEntity.Add(allEntities[i].pos, allEntities[i]);//Adds the position of the entity as it's key
@@ -513,16 +532,11 @@ public abstract class Level : TileMap
             catch (ArgumentException) { }
             try
             {
-                
                 oldCoordToEntity.Add(allEntities[i].prevPos, allEntities[i]);//Separate dictionaries to avoid problems
             }
-            catch (ArgumentException)
-            {
-                continue;
-            }
-
-            
+            catch (ArgumentException) { continue; }
         }
+        GC.Collect();
     }
 
 

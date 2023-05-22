@@ -3,7 +3,7 @@ using System;
 
 public class Kyomira1 : Level
 {
-    
+    public override byte GetLvlID() { return 1; }
     public override void _Ready()
     {
 

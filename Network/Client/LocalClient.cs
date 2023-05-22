@@ -1,16 +1,17 @@
 ﻿using Godot;
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace FFA.Empty.Empty.Network.Client
 {
     public class LocalClient
     {
-        MainMenu mm;
-        Level map;
+        private MainMenu mm;
+        private Level map;
 
-        public void SetParent(MainMenu menu){ mm = menu; map = null; GC.Collect(); }
-        public void SetParent(Level lvl){ map = lvl; mm = null; GC.Collect(); }
+        public void SetParent(MainMenu menu) { mm = menu; map = null; GC.Collect(); }
+        public void SetParent(Level lvl) { map = lvl; mm = null; GC.Collect(); }
 
 
         public bool connected = false;
@@ -74,73 +75,98 @@ namespace FFA.Empty.Empty.Network.Client
                 ping = (data[1] << 24) + (data[2] << 16) + (data[3] << 8) + data[4];
                 return;
             }
-
-            if(mm != null)
-            {
-                switch (data[0])
+            try
+            { 
+                if (mm != null)
                 {
-                    case ABOUT_TO_LAUNCH:
-                        GD.Print("[LocalClient] ABOUT_TO_LAUNCH recieved");
-                        break;
-                    case ABORT_LAUNCH:
-                        GD.Print("[LocalClient] ABORT_LAUNCH recieved");
-                        break;
-                    case LAUNCH:
-                        GD.Print("[LocalClient] LAUNCH recieved");
-                        break;
-                    case SET_CLIENT_OR_ENTITY_ID:
-                        GD.Print("[LocalClient] SET_CLIENT_OR_ENTITY_ID recieved ; clientID : " + data[1] + "\tcharID : " + data[2]);
-                        this.clientID = data[1];
-                        if (data[2] != 0) this.players[clientID - 1].characterID = data[2];
-                        players[clientID - 1] = new PlayerInfo();
-                        players[clientID - 1].clientID = clientID;
-                        players[clientID - 1].characterID = 0;
-                        break;
-                    case SEND_NAME_LIST:
-                        if (mm == null) return;
-                        GD.Print("[LocalClient] SEND_NAME_LIST recieved");
-                        players = PlayerInfo.DeserialiseInfoArray(data);
-                        mm.DisplayPlayerList(players);
-                        break;
-                    case SET_LEVEL_CONFIG:
-                        GD.Print("[LocalClient] SET_LEVEL_CONFIG recieved");
-                        break;
-                    case SERVER_FULL:
-                        GD.Print("[LocalClient] Connexion Denied, Server full");
-                        break;
-                    case GAME_LAUNCHED:
-                        GD.Print("[LocalClient] Connexion Denied, Game launched");
-                        break;
-                    default:
-                        GD.Print("[LocalClient] recieved \"" + data[0] + "\"");
-                        break;
+                    switch (data[0])
+                    {
+                        case ABOUT_TO_LAUNCH:
+                            GD.Print("[LocalClient] ABOUT_TO_LAUNCH recieved");
+                            break;
+                        case ABORT_LAUNCH:
+                            GD.Print("[LocalClient] ABORT_LAUNCH recieved");
+                            break;
+                        case LAUNCH:
+                            GD.Print("[LocalClient] LAUNCH recieved");
+                            if (data[1] != 0)
+                            {
+                                mm.LoadMapFromID(data[1]);
+                                Dictionary<byte, Vector2> IDToCoords = new Dictionary<byte, Vector2>(); ;
+                                ushort offset = 2;
+                                while ((data[offset] != 0) && ((offset + 5) < data.Length))
+                                {
+                                    byte id = data[offset];
 
+                                    short x = (short)((data[offset + 1] << 8) + (data[offset + 2]));
+                                    short y = (short)((data[offset + 3] << 8) + (data[offset + 4]));
+                                    offset += 5;
+
+                                    IDToCoords.Add(id, new Vector2(x, y));
+                                }
+
+                                map.InitPlayerCoordinates(IDToCoords);
+                            }
+                            else throw new NotImplementedException("bruh,  I don't serialize maps yet");
+                            break;
+                        case SET_CLIENT_OR_ENTITY_ID:
+                            GD.Print("[LocalClient] SET_CLIENT_OR_ENTITY_ID recieved ; clientID : " + data[1] + "\tcharID : " + data[2]);
+                            this.clientID = data[1];
+                            if (data[2] != 0) this.players[clientID - 1].characterID = data[2];
+                            players[clientID - 1] = new PlayerInfo();
+                            players[clientID - 1].clientID = clientID;
+                            players[clientID - 1].characterID = 0;
+                            break;
+                        case SEND_NAME_LIST:
+                            if (mm == null) return;
+                            GD.Print("[LocalClient] SEND_NAME_LIST recieved");
+                            players = PlayerInfo.DeserialiseInfoArray(data);
+                            mm.DisplayPlayerList(players);
+                            break;
+                        case SET_LEVEL_CONFIG:
+                            GD.Print("[LocalClient] SET_LEVEL_CONFIG recieved");
+                            break;
+                        case SERVER_FULL:
+                            GD.Print("[LocalClient] Connexion Denied, Server full");
+                            break;
+                        case GAME_LAUNCHED:
+                            GD.Print("[LocalClient] Connexion Denied, Game launched");
+                            break;
+                        default:
+                            GD.Print("[LocalClient] recieved \"" + data[0] + "\"");
+                            break;
+
+                    }
+                }
+                else if (map != null)//TODO MAP LOGIC
+                {
+                    switch (data[0])
+                    {
+                        case LAUNCH://Oops, two protocols in one.
+                        case GAME_OVER:
+                        case GAME_SOON_OVER:
+                        case SET_MOVES:
+                        case SYNC:
+                        case ITEM_GIVEN_BY_SERVER:
+                        case BLUNDERED_BY_SERVER:
+                            return;
+                    }
                 }
             }
-            else if(map != null)//TODO MAP LOGIC
+            catch
             {
-                switch (data[0])
-                {
-                    case GAME_OVER:
-                    case GAME_SOON_OVER:
-                    case SET_MOVES:
-                    case SYNC:
-                    case ITEM_GIVEN_BY_SERVER:
-                    case BLUNDERED_BY_SERVER:
-                        return;
-                }
+                GD.Print("[LocalClient] Incoherent data error");
             }
 
 
 
 
-            
             GC.Collect();
         }
 
-        
-            
-        
+
+
+
 
         //Menu
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\

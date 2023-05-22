@@ -37,10 +37,7 @@ public class NameBox : LineEdit
         this.Text = npcNameTags[rd.Next(npcNameTags.Length)];
     }
     private Random rd = new Random();
-    private MainMenu mm;
-
-    private byte x = 0;
-    
+    private MainMenu mm;    
 
     public void FocusExit()
     {

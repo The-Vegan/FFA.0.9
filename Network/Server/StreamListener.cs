@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FFA.Empty.Empty.Network.Server
@@ -62,7 +61,6 @@ namespace FFA.Empty.Empty.Network.Server
 
         //Ping
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        private bool pingON = false;
         private TaskCompletionSource<bool> ping;
 
         private async void PingThread()
