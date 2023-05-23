@@ -3,6 +3,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace FFA.Empty.Empty.Network.Server
 {
@@ -132,11 +133,12 @@ namespace FFA.Empty.Empty.Network.Server
 
         //Launch methods
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        public bool BeginLaunch()
+        public async Task<bool> BeginLaunch()
         {
             byte[] signal = new byte[8_192];
             signal[0] = ABOUT_TO_LAUNCH;
             server.SendDataOnAllStreams(signal);
+            launchAborted = false;
             for (sbyte sec = 10; sec >= 0; sec--)
             {                          
                 System.Threading.Thread.Sleep(250); if (launchAborted) break; 

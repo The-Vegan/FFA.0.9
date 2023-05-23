@@ -83,9 +83,12 @@ namespace FFA.Empty.Empty.Network.Client
                     {
                         case ABOUT_TO_LAUNCH:
                             GD.Print("[LocalClient] ABOUT_TO_LAUNCH recieved");
+                            mm.launchAborted = false;
+                            mm.CountDownTimer();
                             break;
                         case ABORT_LAUNCH:
                             GD.Print("[LocalClient] ABORT_LAUNCH recieved");
+                            mm.launchAborted = true;
                             break;
                         case LAUNCH:
                             GD.Print("[LocalClient] LAUNCH recieved");

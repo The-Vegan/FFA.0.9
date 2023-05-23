@@ -204,10 +204,8 @@ public class MainMenu : Control
             GD.Print("[MainMenu] Error, No level or Invalid level Selected");
             return;
         }
-
-        CountDownTimer();
         launchAborted = false;
-        launchAborted = !server.BeginLaunch();
+        launchAborted = !server.BeginLaunch().Result ;
         if (!launchAborted) 
         {
             server.AssignRandomCharacters();
@@ -236,7 +234,7 @@ public class MainMenu : Control
 
 
     }
-    private void CountDownTimer()
+    public void CountDownTimer()
     {
         sbyte sec = 10;
         countDownLabel.Visible = true;

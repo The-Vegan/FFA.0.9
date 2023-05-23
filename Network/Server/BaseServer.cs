@@ -40,6 +40,7 @@ namespace FFA.Empty.Empty.Network.Server
         }
         public void Terminate()
         {
+            GD.Print("[BaseServer] terminating");
             for (byte i = 0; i < streams.Length; i++)
             {
                 if (streams[i] != null)

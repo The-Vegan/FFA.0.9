@@ -42,8 +42,9 @@ namespace FFA.Empty.Empty.Network.Server
                     if (buffer[0] == 0) try { ping.SetResult(true); } catch (InvalidOperationException) { GD.Print("[StreamListener] Ping recieved out of cooldown"); }
                     else DataRecievedEvent(this, buffer, stream);
                 }
-                catch
+                catch (Exception e)  
                 {
+                    GD.Print("[StreamListener]" + e.ToString());
                     stream.Close();
                     stream.Dispose();
                     DisconnectedEvent(this);

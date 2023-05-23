@@ -3,6 +3,7 @@ using FFA.Empty.Empty.Network.Server;
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public abstract class Level : TileMap
 {
@@ -217,6 +218,10 @@ public abstract class Level : TileMap
 
     public void InitPlayerCoordinates(Dictionary<byte, Vector2> IDToCoords)
     {
+        byte[] keys = IDToCoords.Keys.ToArray();
+
+        for(byte i = 0; i < keys.Length; i++) allEntities[keys[i]].Moved(IDToCoords[keys[i]]);
+        for(byte i = 0; i < keys.Length; i++) allEntities[keys[i]].Moved(IDToCoords[keys[i]]);//BugFix
 
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
@@ -300,23 +305,8 @@ public abstract class Level : TileMap
 
         //Finalizes configurations for player entity
         allEntities.Add(playerEntity);
-        do
-        {
-            if (idToEntity.Count >= 250) throw new OverflowException("How did you even summon 250+ entities??? ;-;");
-
-            idToGive++;
-            try
-            {
-                idToEntity.Add(idToGive, playerEntity);
-            }
-            catch (ArgumentException)//Give an ID and adds it in dictionary
-            {
-                continue;
-            }
-
-        } while (false);
-
-
+        
+        idToEntity.Add(clientID, playerEntity);
         playerEntity.Init(this, controllScene, nametag, idToGive);
         if ((playerEntity.controller.GetType() == typeof(NetworkController)) && (clientID != 0))
         {
