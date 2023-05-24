@@ -13,6 +13,14 @@ namespace FFA.Empty.Empty.Network.Server
         private BaseServer server;
 
         private PlayerInfo[] players = new PlayerInfo[16];
+
+        public delegate void LaunchIsAborted(object sender);
+        public event LaunchIsAborted AbortingLaunch = delegate { };
+
+        public delegate void CountDownSuccessfull(HostServer sender,bool success);
+        public event CountDownSuccessfull CountdownWithoutEvents = delegate { };
+
+
         public PlayerInfo[] GetPlayer() { return players; }
 
         private bool launchAborted = true;
@@ -133,27 +141,28 @@ namespace FFA.Empty.Empty.Network.Server
 
         //Launch methods
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        public async Task<bool> BeginLaunch()
+        public void BeginLaunch()
         {
             byte[] signal = new byte[8_192];
             signal[0] = ABOUT_TO_LAUNCH;
             server.SendDataOnAllStreams(signal);
             launchAborted = false;
             for (sbyte sec = 10; sec >= 0; sec--)
-            {                          
+            {             
+                
                 System.Threading.Thread.Sleep(250); if (launchAborted) break; 
                 System.Threading.Thread.Sleep(250); if (launchAborted) break; 
                 System.Threading.Thread.Sleep(250); if (launchAborted) break;
                 System.Threading.Thread.Sleep(250); if (launchAborted) break;
-                if (sec == 0) return true;
+                if (sec == 0) CountdownWithoutEvents(this,true);
                 
             }//Launch might be aborted in another thread
             AbortLaunch();
-            return false;
         }
 
         public void AbortLaunch()
         {
+            AbortingLaunch(this);
             byte[] outStream = new byte[8192];
             outStream[0] = ABORT_LAUNCH;
             server.SendDataOnAllStreams(outStream);

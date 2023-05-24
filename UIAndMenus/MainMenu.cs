@@ -158,7 +158,12 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public bool CreateServer()
     {
-        try { this.server = new HostServer(); }
+        try 
+        { 
+            this.server = new HostServer();
+            this.server.AbortingLaunch += delegate { this.launchAborted = true; };
+            this.server.CountdownWithoutEvents += PostCountdownProcedure; 
+        }
         catch (Exception) { return false; }
         return true;
     }
@@ -199,19 +204,18 @@ public class MainMenu : Control
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     private void OnLaunchedPressed()//You are the host
     {
-        if (bufferLvlToLoad == null)
-        {
-            GD.Print("[MainMenu] Error, No level or Invalid level Selected");
-            return;
-        }
+        if (bufferLvlToLoad == null) {GD.Print("[MainMenu] Error, No level or Invalid level Selected"); return; }
         launchAborted = false;
-        launchAborted = !server.BeginLaunch().Result ;
-        if (!launchAborted) 
+        new System.Threading.Thread(server.BeginLaunch).Start();
+    }
+    private void PostCountdownProcedure(HostServer sender,bool success)
+    {
+        if (!success) { sender.AbortLaunch(); return; }
+
+        if (!launchAborted)
         {
             server.AssignRandomCharacters();
-            
         }
-       
 
         Level LoadedLevel = bufferLvlToLoad.Instance() as Level;
         if (LoadedLevel == null)
@@ -227,24 +231,27 @@ public class MainMenu : Control
             ResetNetworkConfigAndGoBackToMainMenu();
             return;
         }
-        
-        LoadedLevel.InitNetwork(this.server, this.client);
-        server.SendStartSignalToAllClients(IDToPositions,LoadedLevel.GetLvlID());
 
+        LoadedLevel.InitNetwork(this.server, this.client);
+        server.SendStartSignalToAllClients(IDToPositions, LoadedLevel.GetLvlID());
 
 
     }
-    public void CountDownTimer()
+
+
+    public async void CountDownTimer()
     {
         sbyte sec = 10;
         countDownLabel.Visible = true;
+
         while (sec >= 0)
         {
             countDownLabel.Text = sec.ToString();
-            System.Threading.Thread.Sleep(250); if (launchAborted) break;
-            System.Threading.Thread.Sleep(250); if (launchAborted) break;
-            System.Threading.Thread.Sleep(250); if (launchAborted) break;
-            System.Threading.Thread.Sleep(250); if (launchAborted) break;
+            
+            await ToSignal(GetTree().CreateTimer(0.25f), "timeout"); if (launchAborted) break;
+            await ToSignal(GetTree().CreateTimer(0.25f), "timeout"); if (launchAborted) break;
+            await ToSignal(GetTree().CreateTimer(0.25f), "timeout"); if (launchAborted) break;
+            await ToSignal(GetTree().CreateTimer(0.25f), "timeout"); if (launchAborted) break;
             sec--;
         }
         countDownLabel.Visible = false;
