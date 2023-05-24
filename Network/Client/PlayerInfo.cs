@@ -1,6 +1,5 @@
 ﻿using Godot;
 using System;
-using System.Numerics;
 using System.Text;
 
 
@@ -57,9 +56,11 @@ namespace FFA.Empty.Empty.Network.Client
 
         public override string ToString()
         {
-            if (this.name == null || this.name == "")
+#pragma warning disable IDE0046 // Convert to conditional expression
+            if (String.IsNullOrEmpty(this.name)) 
                 return this.clientID + "\t: " + this.characterID + "\t: " + team + "\t: Unnamed";
             return this.clientID + "\t: " + this.characterID + "\t: " + team + "\t: " + this.name;
+#pragma warning restore IDE0046 // Convert to conditional expression
         }
 
         public static byte[] SerialiseInfoArray(PlayerInfo[] playerList)

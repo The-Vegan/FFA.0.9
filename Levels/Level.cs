@@ -27,10 +27,10 @@ public abstract class Level : TileMap
 
     //Network
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    private LocalClient client;
-    private HostServer server;
+    protected LocalClient client;
+    protected HostServer server;
 
-    private Dictionary<byte,NetworkController> distantPlayerControllers = new Dictionary<byte, NetworkController>();
+    protected Dictionary<byte,NetworkController> distantPlayerControllers = new Dictionary<byte, NetworkController>();
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
@@ -98,6 +98,7 @@ public abstract class Level : TileMap
 
         for (byte i = 0;i < players.Length; i++)
         {
+            if (players[i] == null) continue;
             if (players[i].clientID == client.clientID)//If the client being loaded is the local client, loads a different controller
             {
                 PackedScene controllScene = GD.Load("res://Abstract/ControllerPlayer.tscn") as PackedScene;
@@ -115,6 +116,11 @@ public abstract class Level : TileMap
         }
         GC.Collect();
         return IDToEntity;
+    }
+
+    public void AddNetworkController(NetworkController c,byte id)
+    {
+        distantPlayerControllers.Add(id, c);
     }
 
     public void InitPlayerAndModeClient()
@@ -179,16 +185,21 @@ public abstract class Level : TileMap
 
     public override void _Ready()
     {
+        GD.Print("[Level] Ready , camera = " + camera + " : timer = " + timer);
+
         camera = this.GetNode("Camera2D") as Camera2D;
         timer = this.GetNode<Timer>("Timer");
         this.RemoveChild(camera);
         
         Hud hud = hudScene.Instance() as Hud;
 
-        mainPlayer.AddChild(hud);
+
+        GD.Print("[Level] Ready , camera = " + camera + " : timer = " + timer + " : hud" + hud);
+
+        mainPlayer.AddChild(hud,true);
         mainPlayer.Connect("noteHiter", hud, "HitNote");
 
-        mainPlayer.AddChild(camera);
+        mainPlayer.AddChild(camera,true);
         
 
         camera.Current = true;
@@ -275,12 +286,15 @@ public abstract class Level : TileMap
         
         } while (false);
 
-        this.AddChild(playerEntity);
+        playerEntity.Init(this, controllScene);
+
+        this.AddChild(playerEntity, true);
 
         return playerEntity;
     }
     protected Entity CreateEntityInstance(int entityID, PackedScene controllScene, string nametag, byte clientID)
     {
+        if (clientID == 0 || clientID > 16) throw new ArgumentException("ClientID must be between 1 and 16");
         Entity playerEntity;
         //Selects correct entity from parameter ID
         switch (entityID)
@@ -307,13 +321,11 @@ public abstract class Level : TileMap
         allEntities.Add(playerEntity);
         
         idToEntity.Add(clientID, playerEntity);
-        playerEntity.Init(this, controllScene, nametag, idToGive);
-        if ((playerEntity.controller.GetType() == typeof(NetworkController)) && (clientID != 0))
-        {
-            distantPlayerControllers.Add(clientID, playerEntity.controller as NetworkController);
-        }
+        playerEntity.Init(this, controllScene, nametag, clientID);
 
-        this.AddChild(playerEntity);
+        this.AddChild(playerEntity, true);
+        
+        
 
         return playerEntity;
     }
@@ -417,7 +429,7 @@ public abstract class Level : TileMap
     {
         Attack atkInstance = atkScene.Instance() as Attack;
         atkInstance.InitAtk(source, atkData, this, path, collumns, flipable);
-        this.AddChild(atkInstance);
+        this.AddChild(atkInstance, true);
     }
 
     public void DamageEntity(Attack atk)
@@ -503,7 +515,6 @@ public abstract class Level : TileMap
                     allEntities[i + gap] = tempEntity;
                 }
             }
-
             gap--;
         }
     }

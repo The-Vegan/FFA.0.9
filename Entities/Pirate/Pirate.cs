@@ -16,8 +16,9 @@ public class Pirate : Entity
     protected bool reallyMoved = false;
     public override void _Ready()
     {
+        GD.Print("[Pirate] Ready");
         base._Ready();
-
+        GD.Print("[Pirate] Base.Ready");
         this.atkFolder = "res://Entities/Pirate/atk/";
 
         this.maxHP = 125;

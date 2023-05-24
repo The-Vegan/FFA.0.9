@@ -3,7 +3,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace FFA.Empty.Empty.Network.Server
 {
@@ -20,10 +19,10 @@ namespace FFA.Empty.Empty.Network.Server
         public delegate void CountDownSuccessfull(HostServer sender,bool success);
         public event CountDownSuccessfull CountdownWithoutEvents = delegate { };
 
-
         public PlayerInfo[] GetPlayer() { return players; }
 
         private bool launchAborted = true;
+        private ushort allClientAreReady = 0;//Bitfeild
 
         public HostServer()
         {
@@ -32,15 +31,17 @@ namespace FFA.Empty.Empty.Network.Server
             server.ClientConnectedEvent += Connected;
             server.ClientDisconnectedEvent += Disconnected;
             server.DataRecievedEvent += DataRecieved;
-
         }
         //Packet Constants
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        /*CLIENT -> SERVER*/
         private const byte PING = 0;
+        /*CLIENT -> SERVER*/
         private const byte MOVE = 1;
         private const byte SET_CHARACTER = 2;
+        private const byte CLIENT_READY = 3;
         /*SERVER -> CLIENT*/
+        private const byte SERVER_FULL = 127;
+        private const byte GAME_LAUNCHED = 128;
         //Pre launch
         private const byte ABOUT_TO_LAUNCH = 255;
         private const byte ABORT_LAUNCH = 254;
@@ -88,6 +89,9 @@ namespace FFA.Empty.Empty.Network.Server
                         players[id - 1] = new PlayerInfo(data, 1);
                         UpdateNameList();
                         break;
+                    case CLIENT_READY:
+                        SetReady(stream);
+                        break;
                     default:
                         GD.Print("[HostServer] Unkown instruction : " + data[0]);
                         break;
@@ -134,6 +138,29 @@ namespace FFA.Empty.Empty.Network.Server
 
             server.SendDataOnSingleStream(output, id);
             UpdateNameList();
+        }
+
+        private void SetReady(NetworkStream s)
+        {
+            for (byte i = 0; i < players.Length; i++)
+            {
+                if(s == server.GetStream(i))
+                {
+                    allClientAreReady |= (ushort)(1 << i);
+                    break;
+                }
+            }
+            if (allClientAreReady == 0xffff)
+            {
+                byte[] p = new byte[8_192]; p[0] = LAUNCH;
+
+                server.SendDataOnAllStreams(p);
+            }
+        }
+
+        private void SetUnReady()
+        {
+            allClientAreReady = 0;
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Event
@@ -194,6 +221,7 @@ namespace FFA.Empty.Empty.Network.Server
             stream[1] = lvlID;
             for(byte i = 0; i < players.Length; i++)
             {
+                if (players[i] == null) continue;
                 ushort offset = (ushort)(i * 5);
 
                 stream[offset + 2] = players[i].clientID;

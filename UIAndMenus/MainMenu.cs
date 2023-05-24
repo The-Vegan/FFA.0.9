@@ -122,8 +122,8 @@ public class MainMenu : Control
     //IHM
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     public void SetGame(byte mode) { this.gameMode = mode; }
-    public void SetCharacter(byte character) { playerCharacter = character; }
-    public void SetPlayerName(string name) { client?.SendCharIDAndName(name); }
+    public void SetCharacter(byte character) { playerCharacter = character; client?.SendCharIDAndName(nameBox.Text, playerCharacter); }
+    public void SetPlayerName(string name) { client.SendCharIDAndName(name,playerCharacter); }
 
     public void CharacterChosen()//Called from the "Next" button on character screen
     {
@@ -176,7 +176,7 @@ public class MainMenu : Control
             client.SetParent(this);
             multiplayer = true;
         }
-        catch (Exception) { return false; }
+        catch (Exception e) { GD.Print("[MainMenu] Err Creating Client : " + e); return false; }
         return true;
     }
 
@@ -208,14 +208,14 @@ public class MainMenu : Control
         launchAborted = false;
         new System.Threading.Thread(server.BeginLaunch).Start();
     }
-    private void PostCountdownProcedure(HostServer sender,bool success)
+    private void PostCountdownProcedure(HostServer sender,bool success)//Called from beginLaunch
     {
         if (!success) { sender.AbortLaunch(); return; }
-
-        if (!launchAborted)
-        {
-            server.AssignRandomCharacters();
-        }
+        
+        if (launchAborted) return;
+        GD.Print("[MainMenu] PostCountdownProcedure called with success = true, launchAborted = false");
+        server.AssignRandomCharacters();
+        
 
         Level LoadedLevel = bufferLvlToLoad.Instance() as Level;
         if (LoadedLevel == null)
@@ -224,6 +224,10 @@ public class MainMenu : Control
             server.AbortLaunch();
             return;
         }
+        LoadedLevel.InitNetwork(this.server, this.client);
+
+        GD.Print("[MainMenu] Lvl loaded with success");
+        GetTree().Root.AddChild(LoadedLevel, true);
 
         Dictionary<byte, Vector2> IDToPositions = LoadedLevel.InitPlayerAndModeMulti(gameMode, numberOfTeams);
         if (IDToPositions == null) //error
@@ -232,7 +236,9 @@ public class MainMenu : Control
             return;
         }
 
-        LoadedLevel.InitNetwork(this.server, this.client);
+        GD.Print("[MainMenu]Position sync dictionary recieved with success");
+        
+
         server.SendStartSignalToAllClients(IDToPositions, LoadedLevel.GetLvlID());
 
 
@@ -289,7 +295,7 @@ public class MainMenu : Control
 
         loadedLevel.InitPlayerAndMode(playerCharacter, gameMode, numberOfTeams);
 
-        GetTree().Root.AddChild(loadedLevel);
+        GetTree().Root.AddChild(loadedLevel, true);
         this.QueueFree();
 
     }

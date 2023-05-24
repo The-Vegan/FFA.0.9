@@ -91,19 +91,30 @@ public class Entity : AnimatedSprite
         this.controllerScene = c;
         this.nameTag = name;
         this.id = givenID;
+
+        GD.Print("[Entity] null Map = " + (map == null) + " ; null controllerscene = " + (controllerScene == null) + " ; id = " + id + " ; name = " + name);
+
+
     }
     public void Init(Level level, PackedScene c)
     {
         this.map = level;
         this.controllerScene = c;
-        this.nameTag = "Bobby";
+        this.nameTag = "";
     }
     public override void _Ready()
     {
+        GD.Print("[Entity] ControllerScene = " + controllerScene);
         animPlayer = (AnimationPlayer)this.GetNode("AnimationPlayer");
         tween = (Tween)this.GetNode("Tween");
         controller = controllerScene.Instance() as GenericController;
-        this.AddChild(controller);
+        GD.Print("[Entity] Controller = " + controller);
+
+        this.AddChild(controller,true);
+
+        GD.Print("[Entity] controller is " + controller.GetType().ToString());
+
+        if (controller.GetType() == typeof(NetworkController)) map.AddNetworkController(this.controller as NetworkController,this.id);
     }
 
 

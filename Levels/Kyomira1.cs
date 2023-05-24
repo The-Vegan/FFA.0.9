@@ -9,7 +9,8 @@ public class Kyomira1 : Level
 
         //DEBUG (REMOVE LATER)
         //______________________________________
-        SpawnAllEntities(16);
+        
+        if(client == null) SpawnAllEntities(16);
         //______________________________________
         //DEBUG (REMOVE LATER)
 

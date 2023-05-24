@@ -29,13 +29,14 @@ namespace FFA.Empty.Empty.Network.Client
 
         //Packet Constants
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        /*CLIENT -> SERVER*/
         private const byte PING = 0;
+        /*CLIENT -> SERVER*/
         private const byte MOVE = 1;
         private const byte SET_CHARACTER = 2;
+        private const byte CLIENT_READY = 3;
+        /*SERVER -> CLIENT*/
         private const byte SERVER_FULL = 127;
         private const byte GAME_LAUNCHED = 128;
-        /*SERVER -> CLIENT*/
         //Pre launch
         private const byte ABOUT_TO_LAUNCH = 255;
         private const byte ABORT_LAUNCH = 254;
@@ -64,6 +65,7 @@ namespace FFA.Empty.Empty.Network.Client
 
         private void Disconnected(object sender)
         {
+            mm?.ResetNetworkConfigAndGoBackToMainMenu();
             this.Disconnect();
         }
 
@@ -107,8 +109,11 @@ namespace FFA.Empty.Empty.Network.Client
 
                                     IDToCoords.Add(id, new Vector2(x, y));
                                 }
-
                                 map.InitPlayerCoordinates(IDToCoords);
+
+                                byte[] readyToStart = new byte[8_192]; readyToStart[0] = CLIENT_READY;
+
+                                client.SendDataToServer(readyToStart);
                             }
                             else throw new NotImplementedException("bruh,  I don't serialize maps yet");
                             break;
@@ -119,6 +124,7 @@ namespace FFA.Empty.Empty.Network.Client
                             players[clientID - 1] = new PlayerInfo();
                             players[clientID - 1].clientID = clientID;
                             players[clientID - 1].characterID = 0;
+                            SendCharIDAndName(players[clientID - 1].name, players[clientID-1].characterID);
                             break;
                         case SEND_NAME_LIST:
                             if (mm == null) return;
@@ -161,28 +167,23 @@ namespace FFA.Empty.Empty.Network.Client
                 GD.Print("[LocalClient] Incoherent data error");
             }
 
-
-
-
             GC.Collect();
         }
 
-
-
-
-
         //Menu
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        public void SendCharIDAndName(string name)
+        public void SendCharIDAndName(string name,byte charID)
         {
-            if (name.Length > 24) return;
+            if (clientID == 0) return;
+            if (name.Length > 24) name = name.Substring(0, 24);
+
             GD.Print("[LocalClient] id:" + clientID + "players:" + players);
             players[clientID - 1].name = name;
+            players[clientID - 1].characterID = charID;
             byte[] stream = new byte[8_192];
             stream[0] = SET_CHARACTER;
             byte[] playerAsBytes = players[clientID - 1].ToByte();
-            for (ushort i = 0; i < playerAsBytes.Length; i++) stream[i + 1] = playerAsBytes[i];
-
+            for (ushort i = 0; i < playerAsBytes.Length && i < 24; i++) stream[i + 1] = playerAsBytes[i];
 
             client.SendDataToServer(stream);
         }
