@@ -16,13 +16,15 @@ namespace FFA.Empty.Empty.Network.Server
         public delegate void LaunchIsAborted(object sender);
         public event LaunchIsAborted AbortingLaunch = delegate { };
 
-        public delegate void CountDownSuccessfull(HostServer sender,bool success);
+        public delegate void CountDownSuccessfull(HostServer sender);
         public event CountDownSuccessfull CountdownWithoutEvents = delegate { };
 
         public PlayerInfo[] GetPlayer() { return players; }
 
         private bool launchAborted = true;
         private ushort allClientAreReady = 0;//Bitfeild
+
+        public Level map;
 
         public HostServer()
         {
@@ -78,6 +80,11 @@ namespace FFA.Empty.Empty.Network.Server
                         break;
                     case MOVE:
                         GD.Print("[HostServer] MOVE recieved");
+                        byte clientID = data[1];
+                        short move = (short)((data[2] << 8) + data[3]);
+
+                        float time = BitConverter.ToSingle(data, 4);
+                        map.SetEntityPacket(clientID, move, time);
                         break;
                     case SET_CHARACTER:
                         byte id = data[1];
@@ -98,9 +105,9 @@ namespace FFA.Empty.Empty.Network.Server
 
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                GD.Print("[HostServer][Datarecieved] Incoherent data, threw exception : " + e);
+                GD.Print("[HostServer][Datarecieved] Incoherent data,protocole : " + data[0] + " Client " + data[1] + ", threw exception : " + e);
             }
 
         }
@@ -144,27 +151,49 @@ namespace FFA.Empty.Empty.Network.Server
         {
             for (byte i = 0; i < players.Length; i++)
             {
-                if(s == server.GetStream(i))
+                if (s == server.GetStream(i))
                 {
                     allClientAreReady |= (ushort)(1 << i);
                     break;
                 }
             }
+
+            String binReady = "";
+            for(byte i = 0;i < players.Length;i++)
+            {
+                if ((allClientAreReady & (1 << i)) != 0) binReady += "1";
+                else binReady += "0";
+            }
+            GD.Print("[HostServer] Clients : " + binReady);
+
             if (allClientAreReady == 0xffff)
             {
-                byte[] p = new byte[8_192]; p[0] = LAUNCH;
-
-                server.SendDataOnAllStreams(p);
+                
+                GD.Print("[HostServer] Starting Level Timer");
+                map.StartTimer();
             }
         }
 
-        private void SetUnReady()
+        public void SetUnReady()
         {
             allClientAreReady = 0;
+            for (byte i = 0; i < players.Length; i++)
+            {
+                if (server.GetStream(i) == null)
+                {
+                    allClientAreReady |= (ushort)(1 << i);
+                }
+            }
+            String binReady = "";
+            for (byte i = 0; i < players.Length; i++)
+            {
+                if ((allClientAreReady & (1 << i)) != 0) binReady += "1";
+                else binReady += "0";
+            }
+            GD.Print("[HostServer] Clients : " + binReady);
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Event
-
 
         //Launch methods
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -175,20 +204,25 @@ namespace FFA.Empty.Empty.Network.Server
             server.SendDataOnAllStreams(signal);
             launchAborted = false;
             for (sbyte sec = 10; sec >= 0; sec--)
-            {             
-                
-                System.Threading.Thread.Sleep(250); if (launchAborted) break; 
-                System.Threading.Thread.Sleep(250); if (launchAborted) break; 
+            {
+
                 System.Threading.Thread.Sleep(250); if (launchAborted) break;
                 System.Threading.Thread.Sleep(250); if (launchAborted) break;
-                if (sec == 0) CountdownWithoutEvents(this,true);
-                
+                System.Threading.Thread.Sleep(250); if (launchAborted) break;
+                System.Threading.Thread.Sleep(250); if (launchAborted) break;
+                if (sec == 0)
+                {
+                    CountdownWithoutEvents(this);
+                    return;
+                }
+
             }//Launch might be aborted in another thread
             AbortLaunch();
         }
 
         public void AbortLaunch()
         {
+            GD.Print("[HostServer] AbortingLaunch");
             AbortingLaunch(this);
             byte[] outStream = new byte[8192];
             outStream[0] = ABORT_LAUNCH;
@@ -200,26 +234,18 @@ namespace FFA.Empty.Empty.Network.Server
             byte[] stream = new byte[8_192];
             stream[0] = LAUNCH;
             //Mode confirm
-            stream[1] = mode;
+            stream[1] = 1;
             //MapID
             //If invalid, sends map as byte stream
             //players starting position
         }
 
-        public void LaunchTimer()
-        {
-            byte[] stream = new byte[8_192];
-            stream[0] = LAUNCH;
-            server.SendDataOnAllStreams(stream);
-        }
-
-
-        public void SendStartSignalToAllClients(Dictionary<byte, Vector2> IDToEntity,byte lvlID)
+        public void SendStartSignalToAllClients(Dictionary<byte, Vector2> IDToEntity, byte lvlID)
         {
             byte[] stream = new byte[8_192];
             stream[0] = LAUNCH;
             stream[1] = lvlID;
-            for(byte i = 0; i < players.Length; i++)
+            for (byte i = 0; i < players.Length; i++)
             {
                 if (players[i] == null) continue;
                 ushort offset = (ushort)(i * 5);
@@ -250,5 +276,35 @@ namespace FFA.Empty.Empty.Network.Server
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Launch methods
+
+        //Level
+        //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
+        public void SendAllMovePackets(List<Entity> allEntities)
+        {
+            byte[] stream = new byte[8_192];
+            stream[0] = SET_MOVES;
+
+            short offset = 1;
+            for(byte i = 0; i < allEntities.Count; i++)
+            {
+                stream[offset] = allEntities[i].id;
+                stream[offset + 1] = (byte)(allEntities[i].packet >> 8);
+                stream[offset + 2] = (byte)allEntities[i].packet;
+                offset += 3;
+
+                byte[] floatAsByte = BitConverter.GetBytes(allEntities[i].timing);
+                stream[offset    ] = floatAsByte[0];
+                stream[offset + 1] = floatAsByte[1];
+                stream[offset + 2] = floatAsByte[2];
+                stream[offset + 3] = floatAsByte[3];
+                offset += 4;
+            }
+
+            server.SendDataOnAllStreams(stream);
+
+
+        }
+        //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
+        //Level
     }
 }

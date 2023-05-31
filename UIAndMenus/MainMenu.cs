@@ -208,28 +208,26 @@ public class MainMenu : Control
         launchAborted = false;
         new System.Threading.Thread(server.BeginLaunch).Start();
     }
-    private void PostCountdownProcedure(HostServer sender,bool success)//Called from beginLaunch
-    {
-        if (!success) { sender.AbortLaunch(); return; }
-        
-        if (launchAborted) return;
-        GD.Print("[MainMenu] PostCountdownProcedure called with success = true, launchAborted = false");
+    private void PostCountdownProcedure(HostServer sender)//Called from beginLaunch
+    {        
+        GD.Print("[MainMenu] PostCountdownProcedure called");
         server.AssignRandomCharacters();
-        
 
         Level LoadedLevel = bufferLvlToLoad.Instance() as Level;
         if (LoadedLevel == null)
         {
             GD.Print("[MainMenu] Error, Failed to load Lvl");
             server.AbortLaunch();
+            launchAborted = true;
             return;
         }
         LoadedLevel.InitNetwork(this.server, this.client);
 
         GD.Print("[MainMenu] Lvl loaded with success");
-        GetTree().Root.AddChild(LoadedLevel, true);
 
         Dictionary<byte, Vector2> IDToPositions = LoadedLevel.InitPlayerAndModeMulti(gameMode, numberOfTeams);
+        GetTree().Root.AddChild(LoadedLevel, true);
+
         if (IDToPositions == null) //error
         {
             ResetNetworkConfigAndGoBackToMainMenu();
@@ -237,11 +235,14 @@ public class MainMenu : Control
         }
 
         GD.Print("[MainMenu]Position sync dictionary recieved with success");
-        
 
+        server.SetUnReady();
         server.SendStartSignalToAllClients(IDToPositions, LoadedLevel.GetLvlID());
+        client.SignalReady();
 
-
+        //TODO Check for failure? 
+        //TODO Check if failure is an option.
+        this.QueueFree();
     }
 
 
@@ -265,6 +266,8 @@ public class MainMenu : Control
 
     public void LoadMapFromID(byte mapID)
     {
+        if (server != null) return;
+        GD.Print("[MainMenu] loading Level with ID :" + mapID);
         string mapPath;
         switch (mapID)
         {
@@ -276,9 +279,17 @@ public class MainMenu : Control
             default:
                 throw new NotImplementedException();
         }
-        Level map = GD.Load<Level>(mapPath);
+        if (String.IsNullOrEmpty(mapPath)) throw new ArgumentException();
+       
+        //Level map = GD.Load<Level>(mapPath);
+
+        PackedScene mapScene = GD.Load<PackedScene>(mapPath);
+        Level map = mapScene.Instance() as Level;
+
+
         map.InitNetwork(this.client);
         map.InitPlayerAndModeClient();
+        GetTree().Root.AddChild(map);
 
         this.QueueFree();
     }

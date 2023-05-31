@@ -110,7 +110,7 @@ namespace FFA.Empty.Empty.Network.Server
 
         public void SendDataOnAllStreams(byte[] data) //avoids checks and returns to save optimisations
         {
-            GD.Print("[BaseServer] Broadcast called ");
+            GD.Print("[BaseServer] Broadcast called : " + data[0]);
             if (data.Length > 8_192)
             {
                 GD.Print("[BaseServer] Err : Message too long : " + data.Length);
@@ -141,7 +141,10 @@ namespace FFA.Empty.Empty.Network.Server
 
         public NetworkStream GetStream(byte idx)
         {
-            return streams[idx].GetStream();
+            if (streams[idx] != null) return streams[idx].GetStream();
+
+            GD.Print("[BaseServer] Stream " + idx + " is null");
+            return null;
         }
     }
 }

@@ -25,11 +25,11 @@ public class Entity : AnimatedSprite
     protected byte ATKCOOLDOWN = 1;
     public float timing = -1;
 
-    protected short packet;
+    public short packet;
     public Vector2 pos = new Vector2(-1,-1);
     public Vector2 prevPos;
 
-    protected byte stun = 0, cooldown = 3, respawnCooldown = 0;
+    protected byte stun = 0, cooldown = 6, respawnCooldown = 0;
     protected bool isDead = false;
 
     [Signal]
@@ -91,28 +91,21 @@ public class Entity : AnimatedSprite
         this.controllerScene = c;
         this.nameTag = name;
         this.id = givenID;
-
-        GD.Print("[Entity] null Map = " + (map == null) + " ; null controllerscene = " + (controllerScene == null) + " ; id = " + id + " ; name = " + name);
-
-
     }
-    public void Init(Level level, PackedScene c)
+    public void Init(Level level, PackedScene c,byte givenID)
     {
         this.map = level;
         this.controllerScene = c;
         this.nameTag = "";
+        this.id = givenID;
     }
     public override void _Ready()
     {
-        GD.Print("[Entity] ControllerScene = " + controllerScene);
-        animPlayer = (AnimationPlayer)this.GetNode("AnimationPlayer");
-        tween = (Tween)this.GetNode("Tween");
+        animPlayer = this.GetNode<AnimationPlayer>("AnimationPlayer");
+        tween = this.GetNode<Tween>("Tween");
         controller = controllerScene.Instance() as GenericController;
-        GD.Print("[Entity] Controller = " + controller);
 
         this.AddChild(controller,true);
-
-        GD.Print("[Entity] controller is " + controller.GetType().ToString());
 
         if (controller.GetType() == typeof(NetworkController)) map.AddNetworkController(this.controller as NetworkController,this.id);
     }
@@ -217,8 +210,7 @@ public class Entity : AnimatedSprite
     public virtual void Moved(Vector2 newTile)
     {
         if (pos == newTile) return;
-
-
+        
         map.SetCell((int)pos.x, (int)pos.y, 0);
         
         pos = newTile;
@@ -380,7 +372,6 @@ public class Entity : AnimatedSprite
         {
             cooldown--;
             ResetBeatValues();
-            GD.Print("[Entity] has cooldown-- = " + cooldown);
             return;
         }
         if (packet == 0)

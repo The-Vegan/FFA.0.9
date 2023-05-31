@@ -35,7 +35,7 @@ public class Hud : CanvasLayer
 
         bn.Position = STARTPOS;
         bn.Play(nextNote);
-        tween.InterpolateProperty(bn, "position", bn.Position, new Vector2(88, 440), 2f, Tween.TransitionType.Linear);
+        tween.InterpolateProperty(bn, "position", bn.Position, new Vector2(88, 440), 4f, Tween.TransitionType.Linear);
         tween.Start();
         SignalAwaiter noteDeleter = new SignalAwaiter(tween, "tween_all_completed", this);
 

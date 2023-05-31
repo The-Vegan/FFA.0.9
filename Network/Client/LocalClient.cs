@@ -78,8 +78,46 @@ namespace FFA.Empty.Empty.Network.Client
                 return;
             }
             try
-            { 
-                if (mm != null)
+            {
+                if (map != null)
+                {
+                    switch (data[0])
+                    {
+                        case GAME_OVER:
+                            GD.Print("[LocalClient] GAME OVER Recieved");
+                            break;
+                        case GAME_SOON_OVER:
+                            GD.Print("[LocalClient] GAME SOON OVER Recieved");
+                            break;
+                        case SET_MOVES:
+                            short offset = 1;
+                            while (data[offset] != 0 && offset < data.Length)
+                            {
+                                byte entityID = data[offset];
+                                short entityPacket = (short)((data[offset + 1] << 8) + data[offset + 2]);
+                                float time = BitConverter.ToSingle(data, offset + 3);
+                                map.SetEntityPacket(entityID, entityPacket, time);
+
+                                offset += 7;
+                            }
+
+                            map.TimerUpdate(this);
+                            break;
+                        case SYNC:
+                            GD.Print("[LocalClient] Sync");
+                            break;
+                        case ITEM_GIVEN_BY_SERVER:
+                            GD.Print("[LocalClient] Server gave you a thingy :3");
+                            break;
+                        case BLUNDERED_BY_SERVER:
+                            GD.Print("[LocalClient] Server fliped you off");
+                            break;
+                        default:
+                            GD.Print("[LocalClient] Error : Unkown protocol : " + data[0]);
+                            return;
+                    }
+                }
+                else if (mm != null)
                 {
                     switch (data[0])
                     {
@@ -111,9 +149,7 @@ namespace FFA.Empty.Empty.Network.Client
                                 }
                                 map.InitPlayerCoordinates(IDToCoords);
 
-                                byte[] readyToStart = new byte[8_192]; readyToStart[0] = CLIENT_READY;
-
-                                client.SendDataToServer(readyToStart);
+                                SignalReady();
                             }
                             else throw new NotImplementedException("bruh,  I don't serialize maps yet");
                             break;
@@ -124,7 +160,7 @@ namespace FFA.Empty.Empty.Network.Client
                             players[clientID - 1] = new PlayerInfo();
                             players[clientID - 1].clientID = clientID;
                             players[clientID - 1].characterID = 0;
-                            SendCharIDAndName(players[clientID - 1].name, players[clientID-1].characterID);
+                            SendCharIDAndName(players[clientID - 1].name, players[clientID - 1].characterID);
                             break;
                         case SEND_NAME_LIST:
                             if (mm == null) return;
@@ -147,24 +183,11 @@ namespace FFA.Empty.Empty.Network.Client
 
                     }
                 }
-                else if (map != null)//TODO MAP LOGIC
-                {
-                    switch (data[0])
-                    {
-                        case LAUNCH://Oops, two protocols in one.
-                        case GAME_OVER:
-                        case GAME_SOON_OVER:
-                        case SET_MOVES:
-                        case SYNC:
-                        case ITEM_GIVEN_BY_SERVER:
-                        case BLUNDERED_BY_SERVER:
-                            return;
-                    }
-                }
+
             }
-            catch
+            catch (Exception e)
             {
-                GD.Print("[LocalClient] Incoherent data error");
+                GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
             }
 
             GC.Collect();
@@ -172,24 +195,52 @@ namespace FFA.Empty.Empty.Network.Client
 
         //Menu
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        public void SendCharIDAndName(string name,byte charID)
+        public void SendCharIDAndName(string name, byte charID)
         {
             if (clientID == 0) return;
-            if (name.Length > 24) name = name.Substring(0, 24);
+            try
+            {
+                if (String.IsNullOrEmpty(name)) name = "bob";
+                else if (name.Length > 24) name = name.Substring(0, 24);
 
-            GD.Print("[LocalClient] id:" + clientID + "players:" + players);
-            players[clientID - 1].name = name;
-            players[clientID - 1].characterID = charID;
-            byte[] stream = new byte[8_192];
-            stream[0] = SET_CHARACTER;
-            byte[] playerAsBytes = players[clientID - 1].ToByte();
-            for (ushort i = 0; i < playerAsBytes.Length && i < 24; i++) stream[i + 1] = playerAsBytes[i];
+                GD.Print("[LocalClient] id:" + clientID + "players:" + players);
+                players[clientID - 1].name = name;
+                players[clientID - 1].characterID = charID;
+                byte[] stream = new byte[8_192];
+                stream[0] = SET_CHARACTER;
+                byte[] playerAsBytes = players[clientID - 1].ToByte();
+                for (ushort i = 0; i < playerAsBytes.Length && i < 24; i++) stream[i + 1] = playerAsBytes[i];
 
-            client.SendDataToServer(stream);
+                client.SendDataToServer(stream);
+            }
+            catch(Exception e) { GD.Print("[LocalClient] [SendCharIDAndName]" + e); }
+            
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Menu
+
+        //Level
+        //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
+        public void SendPacketToServer(short move,float time)
+        {
+            byte[] output = new byte[8_192];
+            output[0] = MOVE;
+            output[1] = clientID;
+            output[2] = (byte)(move >> 8);
+            output[3] = (byte)move;
+            byte[] floatAsByte = BitConverter.GetBytes(time);
+            output[4] = floatAsByte[0];
+            output[5] = floatAsByte[1];
+            output[6] = floatAsByte[2];
+            output[7] = floatAsByte[3];
+
+            client.SendDataToServer(output);
+            GD.Print("[LocalClient] Moves sent");
+        }
+        //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
+        //Level
         public void Disconnect() { client.Disconnect(); connected = false; GD.Print("[LocalClient] Disconected"); }
 
+        internal void SignalReady() { byte[] signal = new byte[8_192]; signal[0] = CLIENT_READY; signal[1] = clientID; client.SendDataToServer(signal); }
     }
 }
