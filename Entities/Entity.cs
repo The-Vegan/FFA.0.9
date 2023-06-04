@@ -63,10 +63,10 @@ public class Entity : AnimatedSprite
     protected byte[] animPerBeat;
     protected bool flippableAnim = false;
 
-    protected List<List<Dictionary<String, short>>> DOWNATK = new List<List<Dictionary<String, short>>>();
-    protected List<List<Dictionary<String, short>>> LEFTATK = new List<List<Dictionary<String, short>>>();
-    protected List<List<Dictionary<String, short>>> RIGHTATK = new List<List<Dictionary<String, short>>>();
-    protected List<List<Dictionary<String, short>>> UPATK = new List<List<Dictionary<String, short>>>();
+    protected List<List<short[]>> DOWNATK = new List<List<short[]>>();
+    protected List<List<short[]>> LEFTATK = new List<List<short[]>>();
+    protected List<List<short[]>> RIGHTATK = new List<List<short[]>>();
+    protected List<List<short[]>> UPATK = new List<List<short[]>>();
 
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //ATTACK VARIABLES
@@ -117,7 +117,7 @@ public class Entity : AnimatedSprite
     protected bool atkNoteWereHit = false;
     public virtual void SetPacket(short p)
     {
-        map.SendPacket(p);
+        new System.Threading.Thread(delegate () { map.SendPacket(p); }).Start();
         if (cooldown != 0 || stun != 0)return;
         
         short comparePacket = packet;

@@ -16,251 +16,167 @@ public class Blahaj : Entity
 
         animPerBeat = new byte[]{4,5,3};
 
-        DOWNATK = new List<List<Dictionary<String, short>>>
+        DOWNATK = new List<List<short[]>>
         {
-            new List<Dictionary<String, short>> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]>   //PHASE 1 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 1 },{ "DAMAGE", 54 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 4 },{ "ANIM", 1 } }
+                new short[] {  0 , 1 ,54 , 0 , 1 , 0 , 0 },
+                new short[] {  0 , 2 , 0 , 1 , 2 , 2 , 0 },
+                new short[] {  1 , 1 , 0 , 1 , 3 , 1 , 0 },
+                new short[] { -1 , 1 , 0 , 1 , 4 , 1 , 0 }
+            },                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]>   //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] {  0 , 2 ,27 , 2 , 5 , 0 , 0 },
+
+                new short[] {  0 , 3 , 0 , 5 , 8 , 4 , 0 },
+                new short[] {  1 , 2 , 0 , 5 , 9 , 3 , 0 },
+                new short[] { -1 , 2 , 0 , 5 ,10 , 3 , 0 },
+
+                new short[] {  1 , 1 , 27 , 3 , 6 , 1 , 0 },
+
+                new short[] {  1 , 2 , 0 , 6 , 9 , 3 , 0 },
+                new short[] {  2 , 1 , 0 , 6 ,11 , 2 , 0 },
+
+
+                new short[] { -1 , 1 ,27 , 4 , 7 , 1 , 0 },
+
+                new short[] { -1 , 2 , 0 , 7 ,10 , 3 , 0 },
+                new short[] { -2 , 1 , 0 , 7 ,12 , 2 , 0 },
+            },                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]>   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] { 2 , 1 , 12 ,11 , 0 , 2 , 0 },
+                new short[] { 1 , 2 , 15 , 9 , 0 , 1 , 0 },
+                new short[] { 0 , 3 , 12 , 8 , 0 , 0 , 0 },
+                new short[] {-1 , 2 , 15 ,10 , 0 , 1 , 0 },
+                new short[] {-2 , 1 , 12 ,12 , 0 , 2 , 0 }
+            }                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+        };
+
+        LEFTATK = new List<List<short[]>>
+        {
+            new List<short[]>   //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] { -1 , 0 ,54 , 0 , 1 , 0 , 0 },
+                new short[] { -2 , 0 , 0 , 1 , 2 , 2, 0 },
+                new short[] { -1 , 1 , 0 , 1 , 3 , 1 , 0 },
+                new short[] { -1 ,-1 , 0 , 1 , 4 , 1 , 0 }
+            },                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]>   //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] { -2 , 0 , 27 , 2 , 5 , 0 , 0 },
+
+                new short[] { -3 , 0 , 0 , 5 , 8 , 4 , 0 },
+                new short[] { -2 , 1 , 0 , 5 , 9 , 3 , 0 },
+                new short[] { -2 ,-1 , 0 , 5 ,10 , 3 , 0 },
+
+
+                new short[] { -1 , 1 , 27 , 3 , 6 , 1 , 0 },
+
+                new short[] { -2 , 1 , 0 , 6 , 9 , 3 , 0 },
+                new short[] { -1 , 2 , 0 , 6 ,11 , 2 , 0 },
+
+
+                new short[] { -1 ,-1 , 27 , 4 , 7 , 1 , 0 },
+
+                new short[] { -2 ,-1 , 0 , 7 ,10 , 3 , 0 },
+                new short[] { -1 ,-2 , 0 , 7 ,12 , 2 , 0 },
+
+
+            },                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]>   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] { -1 , 2 ,12 ,11 , 0 , 2 , 0 },
+                new short[] { -2 , 1 ,15 , 9 , 0 , 1 , 0 },
+                new short[] { -3 , 0 ,12 , 8 , 0 , 0 , 0 },
+                new short[] { -2 ,-1 ,15 ,10 , 0 , 1 , 0 },
+                new short[] { -1 ,-2 ,12 ,12 , 0 , 2 , 0 }
+            }                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+
+
+        };
+
+        RIGHTATK = new List<List<short[]>>
+        {
+            new List<short[]> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            {
+                new short[] {  1 , 0 , 54 , 0 , 1 , 0 , 0 },
+                new short[] {  2 , 0 , 0 , 1 , 2 , 2 , 0 },
+                new short[] {  1 , 1 , 0 , 1 , 3 , 1 , 0 },
+                new short[] {  1 ,-1 , 0 , 1 , 4 , 1 , 0 }
             },                                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 2 },{ "DAMAGE", 27 },{ "LOCK", 2 },{ "KEY", 5 },{ "ANIM", 0 } },
+                new short[] {  2 , 0 , 27 , 2 , 5 , 0 , 0 },
 
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 3 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 8 },{ "ANIM", 4 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 9 },{ "ANIM", 3 } },
-                 new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY",10 },{ "ANIM", 3 } },
+                new short[] {  3 , 0 , 0 , 5 , 8 , 4 , 0 },
+                new short[] {  2 , 1 , 0 , 5 , 9 , 3 , 0 },
+                new short[] {  2 ,-1 , 0 , 5 ,10 , 3 , 0 },
 
+                new short[] {  1 , 1 , 27 , 3 , 6 , 1 , 0 },
 
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 27 },{ "LOCK", 3 },{ "KEY", 6 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY", 9 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY",11 },{ "ANIM", 2 } },
+                new short[] {  2 , 1 , 0 , 6 , 9 , 3 , 0 },
+                new short[] {  1 , 2 , 0 , 6 ,11 , 2 , 0 },
 
 
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 27 },{ "LOCK", 4 },{ "KEY", 7 },{ "ANIM", 1 } },
+                new short[] {  1 ,-1 , 27 , 4 , 7 , 1 , 0 },
 
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",10 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",12 },{ "ANIM", 2 } },
+                new short[] {  2 ,-1 , 0 , 7 ,10 , 3 , 0 },
+                new short[] {  1 ,-2 , 0 , 7 ,12 , 2 , 0 },
 
 
             },                                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 12 },{ "LOCK",11 },{ "KEY", 0 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 15 },{ "LOCK", 9 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 3 },{ "DAMAGE", 12 },{ "LOCK", 8 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 15 },{ "LOCK",10 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 12 },{ "LOCK",12 },{ "KEY", 0 },{ "ANIM", 2 } }
+                new short[] {  1 , 2 , 12 ,11 , 0 , 2 , 0 },
+                new short[] {  2 , 1 , 15 , 9 , 0 , 1 , 0 },
+                new short[] {  3 , 0 , 12 , 8 , 0 , 0 , 0 },
+                new short[] {  2 ,-1 , 15 ,10 , 0 , 1 , 0 },
+                new short[] {  1 ,-2 , 12 ,12 , 0 , 2 , 0 }
             }                                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
 
 
         };
 
 
-        LEFTATK = new List<List<Dictionary<String, short>>>
+        UPATK = new List<List<short[]>>
         {
-            new List<Dictionary<String, short>> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 0 },{ "DAMAGE", 54 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 0 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 2} },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 4 },{ "ANIM", 1 } }
+                new short[] {  0 ,-1 , 54 , 0 , 1 , 0 , 0 },
+                new short[] {  0 ,-2 , 0 , 1 , 2 , 2 , 0 },
+                new short[] {  1 ,-1 , 0 , 1 , 3 , 1 , 0 },
+                new short[] { -1 ,-1 , 0 , 1 , 4 , 1 , 0 }
             },                                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 0 },{ "DAMAGE", 27 },{ "LOCK", 2 },{ "KEY", 5 },{ "ANIM", 0 } },
+                new short[] {  0 ,-2 , 27 , 2 , 5 , 0 , 0 },
 
-                new Dictionary<string, short>
-            { { "X",-3 },{ "Y", 0 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 8 },{ "ANIM", 4 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 9 },{ "ANIM", 3 } },
-                 new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY",10 },{ "ANIM", 3 } },
+                new short[] {  0 ,-3 , 0 , 5 , 8 , 4 , 0 },
+                new short[] {  1 ,-2 , 0 , 5 , 9 , 3 , 0 },
+                new short[] { -1 ,-2 , 0 , 5 ,10 , 3 , 0 },
 
+                new short[] {  1 ,-1 , 27 , 3 , 6 , 1 , 0 },
 
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 27 },{ "LOCK", 3 },{ "KEY", 6 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY", 9 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY",11 },{ "ANIM", 2 } },
+                new short[] {  1 ,-2 , 0 , 6 , 9 , 3 , 0 },
+                new short[] {  2 ,-1 , 0 , 6 ,11 , 2 , 0 },
 
 
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 27 },{ "LOCK", 4 },{ "KEY", 7 },{ "ANIM", 1 } },
+                new short[] { -1 ,-1 , 27 , 4 , 7 , 1 , 0 },
 
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",10 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",12 },{ "ANIM", 2 } },
+                new short[] { -1 ,-2 , 0 , 7 ,10 , 3 , 0 },
+                new short[] { -2 ,-1 , 0 , 7 ,12 , 2 , 0 },
 
 
             },                                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
+            new List<short[]> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
             {
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 12 },{ "LOCK",11 },{ "KEY", 0 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 15 },{ "LOCK", 9 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-3 },{ "Y", 0 },{ "DAMAGE", 12 },{ "LOCK", 8 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 15 },{ "LOCK",10 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 12 },{ "LOCK",12 },{ "KEY", 0 },{ "ANIM", 2 } }
-            }                                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
-
-
-        };
-
-        RIGHTATK = new List<List<Dictionary<String, short>>>
-        {
-            new List<Dictionary<String, short>> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 0 },{ "DAMAGE", 54 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 0 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 4 },{ "ANIM", 1 } }
-            },                                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 0 },{ "DAMAGE", 27 },{ "LOCK", 2 },{ "KEY", 5 },{ "ANIM", 0 } },
-
-                new Dictionary<string, short>
-            { { "X", 3 },{ "Y", 0 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 8 },{ "ANIM", 4 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 9 },{ "ANIM", 3 } },
-                 new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY",10 },{ "ANIM", 3 } },
-
-
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 27 },{ "LOCK", 3 },{ "KEY", 6 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY", 9 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY",11 },{ "ANIM", 2 } },
-
-
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 27 },{ "LOCK", 4 },{ "KEY", 7 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",10 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",12 },{ "ANIM", 2 } },
-
-
-            },                                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 12 },{ "LOCK",11 },{ "KEY", 0 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 15 },{ "LOCK", 9 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X", 3 },{ "Y", 0 },{ "DAMAGE", 12 },{ "LOCK", 8 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 15 },{ "LOCK",10 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 12 },{ "LOCK",12 },{ "KEY", 0 },{ "ANIM", 2 } }
-            }                                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
-
-
-        };
-
-
-        UPATK = new List<List<Dictionary<String, short>>>
-        {
-            new List<Dictionary<String, short>> //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-1 },{ "DAMAGE", 54 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 1 },{ "KEY", 4 },{ "ANIM", 1 } }
-            },                                  //PHASE 1 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-2 },{ "DAMAGE", 27 },{ "LOCK", 2 },{ "KEY", 5 },{ "ANIM", 0 } },
-
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-3 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 8 },{ "ANIM", 4 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY", 9 },{ "ANIM", 3 } },
-                 new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 5 },{ "KEY",10 },{ "ANIM", 3 } },
-
-
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 27 },{ "LOCK", 3 },{ "KEY", 6 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY", 9 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 6 },{ "KEY",11 },{ "ANIM", 2 } },
-
-
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 27 },{ "LOCK", 4 },{ "KEY", 7 },{ "ANIM", 1 } },
-
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",10 },{ "ANIM", 3 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 0 },{ "LOCK", 7 },{ "KEY",12 },{ "ANIM", 2 } },
-
-
-            },                                  //PHASE 2 :::::::::::::::::::::::::::::::::::::::
-            new List<Dictionary<string, short>> //PHASE 3 :::::::::::::::::::::::::::::::::::::::
-            {
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 12 },{ "LOCK",11 },{ "KEY", 0 },{ "ANIM", 2 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 15 },{ "LOCK", 9 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-3 },{ "DAMAGE", 12 },{ "LOCK", 8 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 15 },{ "LOCK",10 },{ "KEY", 0 },{ "ANIM", 1 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 12 },{ "LOCK",12 },{ "KEY", 0 },{ "ANIM", 2 } }
+                new short[] {  2 ,-1 , 12 ,11 , 0 , 2 , 0 },
+                new short[] {  1 ,-2 , 15 , 9 , 0 , 1 , 0 },
+                new short[] {  0 ,-3 , 12 , 8 , 0 , 0 , 0 },
+                new short[] { -1 ,-2 , 15 ,10 , 0 , 1 , 0 },
+                new short[] { -2 ,-1 , 12 ,12 , 0 , 2 , 0 }
             }                                   //PHASE 3 :::::::::::::::::::::::::::::::::::::::
 
 

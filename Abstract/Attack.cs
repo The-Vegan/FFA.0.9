@@ -8,10 +8,19 @@ public class Attack : Node2D
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     protected byte currentBeat = 0;
     protected byte maxBeat;
-    protected List<List<Dictionary<String, short>>> packagedAtkData;
+    protected List<List<short[]>> packagedAtkData;
     protected List<short> keyChain = new List<short>();
 
     protected Vector2 gridPos;
+
+    private const byte X = 0;
+    private const byte Y = 1;
+    private const byte DAMAGE = 2;
+    private const byte LOCK = 3;
+    private const byte KEY = 4;
+    private const byte ANIM = 5;
+    private const byte STATUS = 6;
+
 
     public Vector2 GetGridPos() { return gridPos; }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
@@ -36,7 +45,7 @@ public class Attack : Node2D
     protected byte[] animations;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //ANIMATIONS
-    public void InitAtk(Entity attacker ,List<List<Dictionary<String, short>>> atkData ,Level map,String path ,byte[] collumns ,bool flipable)
+    public void InitAtk(Entity attacker ,List<List<short[]>> atkData ,Level map,String path ,byte[] collumns ,bool flipable)
     {
 
         this.source = attacker;
@@ -76,20 +85,20 @@ public class Attack : Node2D
         {
             var currentTile = frameAtkData[tile];//Select one tile at a time
 
-            if (keyChain.Contains(currentTile["LOCK"]))
+            if (keyChain.Contains(currentTile[LOCK]))
             {
-                if (level.GetCell((int)(gridPos.x + currentTile["X"]),(int) (gridPos.y + currentTile["Y"])) != 2)//checks for wall
+                if (level.GetCell((int)(gridPos.x + currentTile[X]),(int) (gridPos.y + currentTile[Y])) != 2)//checks for wall
                 {
                     CreateDamageTile(textureAnime,
-                                     new Vector2((gridPos.x + currentTile["X"]), (gridPos.y + currentTile["Y"])),
-                                     currentTile["ANIM"],
-                                     currentTile["DAMAGE"]);
+                                     new Vector2((gridPos.x + currentTile[X]), (gridPos.y + currentTile[Y])),
+                                     currentTile[ANIM],
+                                     currentTile[DAMAGE]);
                     
 
-                    if (!keyChain.Contains(currentTile["KEY"]))
+                    if (!keyChain.Contains(currentTile[KEY]))
                     {
                         
-                        keyChain.Add(currentTile["KEY"]);
+                        keyChain.Add(currentTile[KEY]);
                     }
 
                 }

@@ -19,76 +19,52 @@ public class Monstropis : Entity
 
 
 
-        DOWNATK = new List<List<Dictionary<string, short>>>
+        DOWNATK = new List<List<short[]>>
         {
-            new List<Dictionary<string, short>>
+            new List<short[]>
             {
-                 new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y", 2 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 2 },{ "DAMAGE", 30 },{ "LOCK", 2 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 2 },{ "DAMAGE", 30 },{ "LOCK", 3 },{ "KEY", 0 },{ "ANIM", 0 } }
+                new short[] {  0 , 1 , 30 , 0 , 1 , 0 , 0},
+                new short[] {  0 , 2 , 30 , 1 , 0 , 0 , 0},
+                new short[] { -1 , 1 , 30 , 1 , 2 , 0 , 0},
+                new short[] { -1 , 2 , 30 , 2 , 0 , 0 , 0},
+                new short[] {  1 , 1 , 30 , 1 , 3 , 0 , 0},
+                new short[] {  1 , 2 , 30 , 3 , 0 , 0 , 0}
             }
         };
-        LEFTATK = new List<List<Dictionary<string, short>>>
+        LEFTATK = new List<List<short[]>>
         {
-            new List<Dictionary<string, short>>
+            new List<short[]>
             {
-                 new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 0 },{ "DAMAGE", 30 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 0 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 2 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-2 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 3 },{ "KEY", 0 },{ "ANIM", 0 } }
+                new short[] { -1 , 0 , 30 , 0 , 1 , 0 , 0},
+                new short[] { -2 , 0 , 30 , 1 , 0 , 0 , 0},
+                new short[] { -1 ,-1 , 30 , 1 , 2 , 0 , 0},
+                new short[] { -2 ,-1 , 30 , 2 , 0 , 0 , 0},
+                new short[] { -1 , 1 , 30 , 1 , 3 , 0 , 0},
+                new short[] { -2 , 1 , 30 , 3 , 0 , 0 , 0}
             }
         };
-        RIGHTATK = new List<List<Dictionary<string, short>>>
+        RIGHTATK = new List<List<short[]>>
         {
-            new List<Dictionary<string, short>>
+            new List<short[]>
             {
-                 new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 0 },{ "DAMAGE", 30 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 0 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 2 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 2 },{ "Y", 1 },{ "DAMAGE", 30 },{ "LOCK", 3 },{ "KEY", 0 },{ "ANIM", 0 } }
+                new short[] {  1 , 0 , 30 , 0 , 1 , 0 , 0},
+                new short[] {  2 , 0 , 30 , 1 , 0 , 0 , 0},
+                new short[] {  1 ,-1 , 30 , 1 , 2 , 0 , 0},
+                new short[] {  2 ,-1 , 30 , 2 , 0 , 0 , 0},
+                new short[] {  1 , 1 , 30 , 1 , 3 , 0 , 0},
+                new short[] {  2 , 1 , 30 , 3 , 0 , 0 , 0}
             }
         };
-        UPATK = new List<List<Dictionary<string, short>>>
+        UPATK = new List<List<short[]>>
         {
-            new List<Dictionary<string, short>>
+            new List<short[]>
             {
-                 new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 0 },{ "KEY", 1 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 0 },{ "Y",-2 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 2 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X",-1 },{ "Y",-2 },{ "DAMAGE", 30 },{ "LOCK", 2 },{ "KEY", 0 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-1 },{ "DAMAGE", 30 },{ "LOCK", 1 },{ "KEY", 3 },{ "ANIM", 0 } },
-                new Dictionary<string, short>
-            { { "X", 1 },{ "Y",-2 },{ "DAMAGE", 30 },{ "LOCK", 3 },{ "KEY", 0 },{ "ANIM", 0 } }
+                new short[] {  0 ,-1 , 30 , 0 , 1 , 0 , 0},
+                new short[] {  0 ,-2 , 30 , 1 , 0 , 0 , 0},
+                new short[] { -1 ,-1 , 30 , 1 , 2 , 0 , 0},
+                new short[] { -1 ,-2 , 30 , 2 , 0 , 0 , 0},
+                new short[] {  1 ,-1 , 30 , 1 , 3 , 0 , 0},
+                new short[] {  1 ,-2 , 30 , 3 , 0 , 0 , 0}
             }
         };
 

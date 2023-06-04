@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 
+
 namespace FFA.Empty.Empty.Network.Server
 {
 
@@ -70,12 +71,14 @@ namespace FFA.Empty.Empty.Network.Server
         {
             try
             {
-                if (server.GetStream((byte)(data[1] - 1)) != stream) GD.Print("[HostServer] Stream doesn't match with corresponding ID : " + data[1]);
-                GD.Print("[HostServer] Recieved data from client " + data[1]);
+                if (server.GetStream((byte)(data[1] - 1)) != stream)
+                {
+                    GD.Print("[HostServer] Stream doesn't match with corresponding ID : " + data[1]);
+                    return;
+                }
                 switch (data[0])
                 {
                     case PING:
-                        GD.Print("[HostServer] PING recieved from " + data[1]);
                         server.GetStream((byte)(data[1] - 1)).Write(data, 0, data.Length);
                         break;
                     case MOVE:
@@ -94,7 +97,7 @@ namespace FFA.Empty.Empty.Network.Server
                             break;
                         }
                         players[id - 1] = new PlayerInfo(data, 1);
-                        UpdateNameList();
+                        new System.Threading.Thread(UpdateNameList).Start();
                         break;
                     case CLIENT_READY:
                         SetReady(stream);
@@ -125,7 +128,7 @@ namespace FFA.Empty.Empty.Network.Server
 
             GD.Print("[HostServer] Client " + clientID + " Disconnected");
             players[clientID - 1] = null;
-            UpdateNameList();
+            new System.Threading.Thread(UpdateNameList).Start();
         }
 
         private void Connected(object sender, byte id)
@@ -142,7 +145,7 @@ namespace FFA.Empty.Empty.Network.Server
             players[id - 1].characterID = 0;
 
             server.SendDataOnSingleStream(output, id);
-            UpdateNameList();
+            new System.Threading.Thread(UpdateNameList).Start();
         }
 
         private void SetReady(NetworkStream s)
@@ -156,19 +159,12 @@ namespace FFA.Empty.Empty.Network.Server
                 }
             }
 
-            String binReady = "";
-            for(byte i = 0;i < players.Length;i++)
-            {
-                if ((allClientAreReady & (1 << i)) != 0) binReady += "1";
-                else binReady += "0";
-            }
-            GD.Print("[HostServer] Clients : " + binReady);
-
+            
             if (allClientAreReady == 0xffff)
             {
-                
                 GD.Print("[HostServer] Starting Level Timer");
                 map.StartTimer();
+
             }
         }
 
@@ -182,13 +178,6 @@ namespace FFA.Empty.Empty.Network.Server
                     allClientAreReady |= (ushort)(1 << i);
                 }
             }
-            String binReady = "";
-            for (byte i = 0; i < players.Length; i++)
-            {
-                if ((allClientAreReady & (1 << i)) != 0) binReady += "1";
-                else binReady += "0";
-            }
-            GD.Print("[HostServer] Clients : " + binReady);
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Event
@@ -277,7 +266,13 @@ namespace FFA.Empty.Empty.Network.Server
 
         //Level
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
-        public void SendAllMovePackets(List<Entity> allEntities)
+        public void SendSyncPlusPacket(List<Entity> allEntities)
+        {
+            SendSyncPosition(allEntities);
+            SendAllMovePackets(allEntities);
+        }
+
+        private void SendAllMovePackets(List<Entity> allEntities)
         {
             byte[] stream = new byte[8_192];
             stream[0] = SET_MOVES;
@@ -303,7 +298,7 @@ namespace FFA.Empty.Empty.Network.Server
 
         }
 
-        internal void SendSyncPosition(List<Entity> allEntities)
+        private void SendSyncPosition(List<Entity> allEntities)
         {
             List<SyncEntityPacket> syncList = new List<SyncEntityPacket>();
 

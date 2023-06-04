@@ -12,6 +12,7 @@ namespace FFA.Empty.Empty.Network.Client
         private bool connected;
         private NetworkStream stream;
 
+        private System.Threading.Mutex sendMustex = new System.Threading.Mutex();
 
         //Events
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -72,16 +73,20 @@ namespace FFA.Empty.Empty.Network.Client
         public void SendDataToServer(byte[] data)
         {
             if (!connected) return;
-
-            if (data.Length > 8_192)
+            if (sendMustex.WaitOne(100))
             {
-                //Split message
-                GD.Print("[BaseClient] Err : Message too long : " + data.Length);
+                if (data.Length > 8_192)
+                {
+                    //Split message
+                    GD.Print("[BaseClient] Err : Message too long : " + data.Length);
+                }
+                else
+                {
+                    stream.Write(data, 0, data.Length);
+                }
+                sendMustex.ReleaseMutex();
             }
-            else
-            {
-                stream.Write(data, 0, data.Length);
-            }
+            else { GD.Print("[BaseClient] ERR : Failed to send data : Mutex taken"); }
         }
 
     }

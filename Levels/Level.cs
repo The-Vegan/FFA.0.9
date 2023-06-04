@@ -32,6 +32,8 @@ public abstract class Level : TileMap
     protected HostServer server;
 
     protected Dictionary<byte,NetworkController> distantPlayerControllers = new Dictionary<byte, NetworkController>();
+
+    public bool hasServer => server != null;
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //Network
 
@@ -119,7 +121,7 @@ public abstract class Level : TileMap
         return IDToEntity;
     }
 
-    internal void SendPacket(short p)
+    public void SendPacket(short p)
     {
         client?.SendPacketToServer(p, this.timer.TimeLeft);
     }
@@ -200,8 +202,6 @@ public abstract class Level : TileMap
         
         Hud hud = hudScene.Instance() as Hud;
 
-        GD.Print("[Level] Ready , camera = " + camera + " : timer = " + timer + " : hud" + hud);
-        
         mainPlayer.AddChild(hud,true);
         mainPlayer.Connect("noteHiter", hud, "HitNote");
 
@@ -237,10 +237,8 @@ public abstract class Level : TileMap
         if (!this.IsInsideTree()) await ToSignal(this, "ready");
 
         byte[] keys = IDToCoords.Keys.ToArray();
-        GD.Print("[Level] Setting Entity positions");
-        for (byte i = 0; i < keys.Length; i++) GD.Print(keys[i] + " : " + IDToCoords[keys[i]]);
         for (byte i = 0; i < keys.Length; i++) allEntities[keys[i]-1].Moved(IDToCoords[keys[i]]);
-        for(byte i = 0; i < keys.Length; i++) allEntities[keys[i]-1].Moved(IDToCoords[keys[i]]);//BugFix
+        for (byte i = 0; i < keys.Length; i++) allEntities[keys[i]-1].Moved(IDToCoords[keys[i]]);//BugFix
 
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
@@ -439,7 +437,7 @@ public abstract class Level : TileMap
 
     //ATTACK RELATED METHODS
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    public void CreateAtk(Entity source, List<List<Dictionary<String, short>>> atkData, String path, byte[] collumns, bool flipable)
+    public void CreateAtk(Entity source, List<List<short[]>> atkData, String path, byte[] collumns, bool flipable)
     {
         Attack atkInstance = atkScene.Instance() as Attack;
         atkInstance.InitAtk(source, atkData, this, path, collumns, flipable);
@@ -505,12 +503,8 @@ public abstract class Level : TileMap
     {
         globalBeat++;
         //GD.Print("[Level] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
-        if(server != null)
-        {
-            server.SendSyncPosition(allEntities);
-            server.SendAllMovePackets(allEntities);
-        }
-
+        if(server != null) new System.Threading.Thread(delegate () { server.SendSyncPlusPacket(allEntities); }).Start();
+      
         UpdateAllEntities();
 
         UpdatePositionDictionary();
@@ -523,6 +517,8 @@ public abstract class Level : TileMap
     {
         if (server != null) return;
 
+        timer.OneShot = true;
+        timer.Start();
         globalBeat++;
         //GD.Print("[Level] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
 
@@ -531,8 +527,7 @@ public abstract class Level : TileMap
         UpdatePositionDictionary();
 
         GetTree().CallGroup("Attacks", "BeatAtkUpdate");//Also updates the hud
-
-        EmitSignal("checkEndingCondition");
+        
     }
 
     protected void UpdateAllEntities()

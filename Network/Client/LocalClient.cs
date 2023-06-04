@@ -81,6 +81,7 @@ namespace FFA.Empty.Empty.Network.Client
             {
                 if (map != null)
                 {
+                    if (map.hasServer) return; //prevents server from self sabotaging itself
                     switch (data[0])
                     {
                         case GAME_OVER:
@@ -97,7 +98,8 @@ namespace FFA.Empty.Empty.Network.Client
                                 short entityPacket = (short)((data[offset + 1] << 8) + data[offset + 2]);
                                 float time = BitConverter.ToSingle(data, offset + 3);
                                 map.SetEntityPacket(entityID, entityPacket, time);
-
+                                String pktAsBits = Convert.ToString(entityPacket, 2);
+                                GD.Print("[LocalClient] Set packet to entity " + entityID + " : " + pktAsBits);
                                 offset += 7;
                             }
 
