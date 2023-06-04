@@ -48,7 +48,7 @@ namespace FFA.Empty.Empty.Network.Client
         private const byte GAME_OVER = 249;
         private const byte GAME_SOON_OVER = 248;
         private const byte SET_MOVES = 247;
-        private const byte SYNC = 246;
+        private const byte SYNC_ENTITIES = 246;
         private const byte ITEM_GIVEN_BY_SERVER = 245;
         private const byte BLUNDERED_BY_SERVER = 244;
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -103,8 +103,12 @@ namespace FFA.Empty.Empty.Network.Client
 
                             map.TimerUpdate(this);
                             break;
-                        case SYNC:
-                            GD.Print("[LocalClient] Sync");
+                        case SYNC_ENTITIES:
+                            List<SyncEntityPacket> packets = SyncEntityPacket.ToSyncPacketList(data);
+
+
+                            map.ResyncEntities(packets);
+
                             break;
                         case ITEM_GIVEN_BY_SERVER:
                             GD.Print("[LocalClient] Server gave you a thingy :3");
@@ -189,8 +193,6 @@ namespace FFA.Empty.Empty.Network.Client
             {
                 GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
             }
-
-            GC.Collect();
         }
 
         //Menu

@@ -55,7 +55,7 @@ namespace FFA.Empty.Empty.Network.Server
         private const byte GAME_OVER = 249;
         private const byte GAME_SOON_OVER = 248;
         private const byte SET_MOVES = 247;
-        private const byte SYNC = 246;
+        private const byte SYNC_ENTITIES = 246;
         private const byte ITEM_GIVEN_BY_SERVER = 245;
         private const byte BLUNDERED_BY_SERVER = 244;
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -126,8 +126,6 @@ namespace FFA.Empty.Empty.Network.Server
             GD.Print("[HostServer] Client " + clientID + " Disconnected");
             players[clientID - 1] = null;
             UpdateNameList();
-            GC.Collect();
-
         }
 
         private void Connected(object sender, byte id)
@@ -303,6 +301,15 @@ namespace FFA.Empty.Empty.Network.Server
             server.SendDataOnAllStreams(stream);
 
 
+        }
+
+        internal void SendSyncPosition(List<Entity> allEntities)
+        {
+            List<SyncEntityPacket> syncList = new List<SyncEntityPacket>();
+
+            for(byte i = 0; i < allEntities.Count; i++) { syncList.Add(new SyncEntityPacket(allEntities[i])); }
+
+            server.SendDataOnAllStreams(SyncEntityPacket.ToByteArray(syncList));
         }
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
         //Level

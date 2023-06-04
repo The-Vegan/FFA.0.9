@@ -116,8 +116,12 @@ public abstract class Level : TileMap
             IDToEntity.Add((byte)(i + 1), entity.pos);
 
         }
-        GC.Collect();
         return IDToEntity;
+    }
+
+    internal void SendPacket(short p)
+    {
+        client?.SendPacketToServer(p, this.timer.TimeLeft);
     }
 
     public void AddNetworkController(NetworkController c,byte id)
@@ -485,7 +489,15 @@ public abstract class Level : TileMap
 
     //NETWORKING
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
-    
+    public void ResyncEntities(List<SyncEntityPacket> allPackets)
+    {
+        for(byte i = 0; i < allPackets.Count; i++)
+        {
+            Entity resync = idToEntity[allPackets[i].entityID];
+
+            resync.Sync(allPackets[i]);
+        }
+    }
 
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //NETWORKING
@@ -493,8 +505,11 @@ public abstract class Level : TileMap
     {
         globalBeat++;
         //GD.Print("[Level] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
-
-        server?.SendAllMovePackets(allEntities);
+        if(server != null)
+        {
+            server.SendSyncPosition(allEntities);
+            server.SendAllMovePackets(allEntities);
+        }
 
         UpdateAllEntities();
 
@@ -571,7 +586,6 @@ public abstract class Level : TileMap
             }
             catch (ArgumentException) { continue; }
         }
-        GC.Collect();
     }
 
 

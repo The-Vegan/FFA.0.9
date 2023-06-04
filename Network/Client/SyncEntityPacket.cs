@@ -1,13 +1,10 @@
 ﻿using Godot;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFA.Empty.Empty.Network.Client
 {
-    public class SyncPacket
+    public class SyncEntityPacket
     {
         //Packet Constants
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -30,7 +27,7 @@ namespace FFA.Empty.Empty.Network.Client
         private const byte GAME_OVER = 249;
         private const byte GAME_SOON_OVER = 248;
         private const byte SET_MOVES = 247;
-        private const byte SYNC = 246;
+        private const byte SYNC_ENTITIES = 246;
         private const byte ITEM_GIVEN_BY_SERVER = 245;
         private const byte BLUNDERED_BY_SERVER = 244;
         //-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\\
@@ -43,17 +40,16 @@ namespace FFA.Empty.Empty.Network.Client
         public sbyte itembar;
         public byte heldItemID;
 
-
-        public SyncPacket(byte entityID, Vector2 position, short health, sbyte blunderbar, sbyte itembar, byte heldItemID)
+        public SyncEntityPacket(Entity entity)
         {
-            this.entityID = entityID;
-            this.position = position;
-            this.health = health;
-            this.blunderbar = blunderbar;
-            this.itembar = itembar;
-            this.heldItemID = heldItemID;
+            this.entityID = entity.id;
+            this.position = entity.pos;
+            this.health = entity.GetHealthPoint();
+            this.blunderbar = entity.GetBlunder();
+            this.itembar = entity.GetItembar();
+            this.heldItemID = entity.itemID;
         }
-        public SyncPacket(byte[] data, ushort offset) 
+        public SyncEntityPacket(byte[] data, ushort offset) 
         {
             this.entityID = data[offset];
 
@@ -71,7 +67,7 @@ namespace FFA.Empty.Empty.Network.Client
         {
             byte[] outstream = new byte[8_192];
 
-            outstream[0] = SYNC;
+            outstream[0] = SYNC_ENTITIES;
             outstream[1] = entityID;
 
             outstream[2] = (byte)((byte)position.x >> 8); outstream[3] = (byte)position.x;
@@ -84,6 +80,48 @@ namespace FFA.Empty.Empty.Network.Client
             outstream[10] = heldItemID;
 
             return outstream;
+        }
+
+        public static byte[] ToByteArray(List<SyncEntityPacket> packets)
+        {
+            byte[] stream = new byte[8_192];
+
+            stream[0] = SYNC_ENTITIES;
+            ushort offset = 1;
+            for(byte i = 0; i < packets.Count; i++)
+            {
+                stream[offset] = packets[i].entityID;
+
+                stream[offset + 1] = (byte)((byte)packets[i].position.x >> 8); stream[offset + 2] = (byte)packets[i].position.x;
+                stream[offset + 3] = (byte)((byte)packets[i].position.y >> 8); stream[offset + 4] = (byte)packets[i].position.y;
+
+                stream[offset + 5] = (byte)(packets[i].health >> 8); stream[offset + 6] = (byte)packets[i].health;
+
+                stream[offset + 7] = (byte)packets[i].blunderbar;
+                stream[offset + 8] = (byte)packets[i].itembar;
+                stream[offset + 9] = packets[i].heldItemID;
+                offset += 10;
+            }
+            return stream;
+        }
+
+
+        public static List<SyncEntityPacket> ToSyncPacketList(byte[] data)
+        {
+            ushort offset = 1;
+            List<SyncEntityPacket> retList = new List<SyncEntityPacket>();
+
+            try
+            {
+                while (data[offset] != 0)
+                {
+                    retList.Add(new SyncEntityPacket(data, offset));
+                    offset += 10;
+                }
+            }
+            catch (IndexOutOfRangeException) { GD.Print("[SyncPacket] how many entities do you even have??? " + retList.Count); }
+
+            return retList;
         }
 
     }

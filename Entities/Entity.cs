@@ -55,7 +55,8 @@ public class Entity : AnimatedSprite
     protected short blunderBar = 0;
     protected short itemBar = 0;
     public byte itemID = 0;
-    public short GetBlunder() { return blunderBar; }
+    public sbyte GetBlunder() { return (sbyte)blunderBar; }
+    public sbyte GetItembar() { return (sbyte)itemBar; }
     protected List<Entity> damagedBy;
 
     protected String atkFolder;
@@ -116,7 +117,7 @@ public class Entity : AnimatedSprite
     protected bool atkNoteWereHit = false;
     public virtual void SetPacket(short p)
     {
-
+        map.SendPacket(p);
         if (cooldown != 0 || stun != 0)return;
         
         short comparePacket = packet;
@@ -400,5 +401,23 @@ public class Entity : AnimatedSprite
         packet = 0;
         atkNoteWereHit = false;
         damagedBy = new List<Entity>() { this };
+    }
+
+    public void Sync(FFA.Empty.Empty.Network.Client.SyncEntityPacket packet)
+    {
+        if(pos != packet.position)
+        {
+            map.SetCell((int)pos.x, (int)pos.y, 0);
+
+            pos = packet.position;
+            map.SetCell((int)pos.x, (int)pos.y, 3);
+
+            this.Position = new Vector2((pos.x * 64) + 32, (pos.y * 64) + 16);
+        }
+        
+        this.healthPoint = packet.health;
+        this.blunderBar = packet.blunderbar;
+        this.itemBar = packet.itembar;
+        this.itemID = packet.heldItemID;
     }
 }

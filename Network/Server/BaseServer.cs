@@ -89,7 +89,6 @@ namespace FFA.Empty.Empty.Network.Server
                 {
                     streams[i] = null;
                     ClientDisconnectedEvent(this, (byte)(i + 1));
-                    GC.Collect();
                     return;
                 }
             }
