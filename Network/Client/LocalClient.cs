@@ -11,7 +11,7 @@ namespace FFA.Empty.Empty.Network.Client
         private Level map;
 
         public void SetParent(MainMenu menu) { mm = menu; map = null; GC.Collect(); }
-        public void SetParent(Level lvl) { map = lvl; mm = null; GC.Collect(); }
+        public void SetParent(Level lvl) { map = lvl; mm = null; GC.Collect();GD.Print("[LocalClient] Map initialized"); }
 
 
         public bool connected = false;
@@ -77,7 +77,7 @@ namespace FFA.Empty.Empty.Network.Client
                 ping = (data[1] << 24) + (data[2] << 16) + (data[3] << 8) + data[4];
                 return;
             }
-            try
+            //try
             {
                 if (map != null)
                 {
@@ -97,9 +97,9 @@ namespace FFA.Empty.Empty.Network.Client
                                 byte entityID = data[offset];
                                 short entityPacket = (short)((data[offset + 1] << 8) + data[offset + 2]);
                                 float time = BitConverter.ToSingle(data, offset + 3);
+
                                 map.SetEntityPacket(entityID, entityPacket, time);
-                                String pktAsBits = Convert.ToString(entityPacket, 2);
-                                GD.Print("[LocalClient] Set packet to entity " + entityID + " : " + pktAsBits);
+                                
                                 offset += 7;
                             }
 
@@ -191,9 +191,9 @@ namespace FFA.Empty.Empty.Network.Client
                 }
 
             }
-            catch (Exception e)
+            //catch (Exception e)
             {
-                GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
+            //    GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
             }
         }
 

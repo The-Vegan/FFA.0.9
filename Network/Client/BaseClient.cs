@@ -55,16 +55,16 @@ namespace FFA.Empty.Empty.Network.Client
             {
 
                 byte[] buffer = new byte[8_192];
-                try
+                //try
                 {
                     stream.Read(buffer, 0, buffer.Length);
                     DataRecievedEvent(this, buffer, stream);
                 }
-                catch (Exception e)
+                /*catch (Exception e)
                 {
                     GD.Print("[BaseClient] Disconnecting, Exeption caught : " + e);
                     connected = false;
-                }
+                }*/
 
             }
             ClientDisconnectedEvent(this);

@@ -257,15 +257,12 @@ public abstract class Level : TileMap
         switch (entityID)
         {
             case 1://Pirate
-                GD.Print("[Level] Make a pirate");
                 playerEntity = pirateScene.Instance() as Pirate;       
                 break;
             case 2://♥
-                GD.Print("[Level] Make a ♥");
                 playerEntity = blahajScene.Instance() as Blahaj;
                 break;
-            case 3:
-                GD.Print("[Level] Make a monstropis");
+            case 3://Monstropis
                 playerEntity = monstropisScene.Instance() as Monstropis;
                 break;
 
@@ -276,7 +273,6 @@ public abstract class Level : TileMap
 
         //Finalizes configurations for player entity
         allEntities.Add(playerEntity);
-        GD.Print("[Level] Added Entity to the tree : " + playerEntity);
         do 
         {
             if (idToEntity.Count >= 250) throw new OverflowException("How did you even summon 250+ entities??? ;-;");
@@ -296,8 +292,6 @@ public abstract class Level : TileMap
         playerEntity.Init(this, controllScene, nametag, idToGive);
 
         this.AddChild(playerEntity, true);
-        GD.Print("[Level] Entity initialized and added to tree");
-
 
         return playerEntity;
     }
@@ -309,15 +303,12 @@ public abstract class Level : TileMap
         switch (entityID)
         {
             case 1://Pirate
-                GD.Print("[Level] Make a pirate");
                 playerEntity = pirateScene.Instance() as Pirate;
                 break;
             case 2://♥
-                GD.Print("[Level] Make a ♥");
                 playerEntity = blahajScene.Instance() as Blahaj;
                 break;
             case 3:
-                GD.Print("[Level] Make a monstropis");
                 playerEntity = monstropisScene.Instance() as Monstropis;
                 break;
             default://Random
@@ -331,7 +322,7 @@ public abstract class Level : TileMap
         idToEntity.Add(clientID, playerEntity);
         playerEntity.Init(this, controllScene, nametag, clientID);
         this.AddChild(playerEntity, true);
-        GD.Print("[Level] Entity initialized and added to tree");
+        
         return playerEntity;
     }
     public void DeleteEntity(Entity entity)
@@ -341,7 +332,7 @@ public abstract class Level : TileMap
         allEntities.Remove(entity);
 
         entity.QueueFree();
-        GD.Print("{[Level] " + entity + " has been deleted from existance");
+        GD.Print("[Level] " + entity + " has been deleted from existance");
     }
 
     public void MoveEntity(Entity entity,Vector2 newTile)
@@ -359,18 +350,11 @@ public abstract class Level : TileMap
 
     public async void Spawn(Entity entity)
     {
-        if (!this.IsInsideTree())
-        {
-            GD.Print("[Level] Level outside of tree, awaiting ready");
-            await ToSignal(this, "ready");
-            GD.Print("[Level] Ready Signal Recieved");
-        }
-
+        if (!this.IsInsideTree()) await ToSignal(this, "ready");
 
         byte failures = 0;//Forces spawning if fails too much
 
         entity.ResetHealth();
-        GD.Print("[Level] Spawning " + entity);
         while (failures < 65)
         {
             if (!teamMode)
@@ -419,18 +403,16 @@ public abstract class Level : TileMap
 
     public void SetEntityPacket(byte entityID, short packet, float timing)
     {
-        if (!idToEntity.ContainsKey(entityID))
+        try
         {
-            GD.Print("[Level] ERROR : Entity "+ entityID +" not found");
-            return;
+            Entity entity = idToEntity[entityID];
+            distantPlayerControllers[entity.id].PacketSetByServer(packet);
+            float delta = Math.Abs(entity.timing - timing);//Obtient l'écart entre lvl et entité
+
+            if (delta < 0.03f) entity.timing = timing;//Cecks for lag(in seconds)
         }
-
-        Entity entity = idToEntity[entityID];
-        entity.SetPacket(packet);
-
-        float delta = Math.Abs(entity.timing - timing);//Obtient l'écart entre lvl et entité
-
-        if (delta < 0.03f) entity.timing = timing;//Cecks for lag(in seconds)
+        catch (KeyNotFoundException) { GD.Print("[Level] SetEntityPacket couldn't find Entity or NetworkController"); }
+        
     }
     //*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\\
     //ENTITY RELATED METHODS
@@ -502,7 +484,7 @@ public abstract class Level : TileMap
     public void TimerUpdate()
     {
         globalBeat++;
-        //GD.Print("[Level] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
+        GD.Print("[Level][Server] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
         if(server != null) new System.Threading.Thread(delegate () { server.SendSyncPlusPacket(allEntities); }).Start();
       
         UpdateAllEntities();
@@ -520,7 +502,7 @@ public abstract class Level : TileMap
         timer.OneShot = true;
         timer.Start();
         globalBeat++;
-        //GD.Print("[Level] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
+        GD.Print("[Level][Client] - - - - - - - - - - - - - - - - - - - - - - - - " + globalBeat);
 
         UpdateAllEntities();
 

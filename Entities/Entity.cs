@@ -117,7 +117,17 @@ public class Entity : AnimatedSprite
     protected bool atkNoteWereHit = false;
     public virtual void SetPacket(short p)
     {
-        new System.Threading.Thread(delegate () { map.SendPacket(p); }).Start();
+
+        if(this.controller.GetType() == typeof(ControllerPlayer))
+        {
+            new System.Threading.Thread(delegate () { map.SendPacket(p); }).Start();
+
+            if (map.hasServer) GD.Print("[Entity] Err SetPAcket but map.hasServer == true");
+
+        }
+            
+
+
         if (cooldown != 0 || stun != 0)return;
         
         short comparePacket = packet;
