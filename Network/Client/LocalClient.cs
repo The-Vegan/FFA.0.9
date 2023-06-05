@@ -245,6 +245,10 @@ namespace FFA.Empty.Empty.Network.Client
         //Level
         public void Disconnect() { client.Disconnect(); connected = false; GD.Print("[LocalClient] Disconected"); }
 
-        internal void SignalReady() { byte[] signal = new byte[8_192]; signal[0] = CLIENT_READY; signal[1] = clientID; client.SendDataToServer(signal); }
+        internal void SignalReady() 
+        { 
+            byte[] signal = new byte[8_192]; signal[0] = CLIENT_READY; signal[1] = clientID; client.SendDataToServer(signal);
+            GD.Print("[localClient] Send CLIENT_READY");
+        }
     }
 }
