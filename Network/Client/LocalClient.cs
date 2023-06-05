@@ -77,7 +77,7 @@ namespace FFA.Empty.Empty.Network.Client
                 ping = (data[1] << 24) + (data[2] << 16) + (data[3] << 8) + data[4];
                 return;
             }
-            //try
+            try
             {
                 if (map != null)
                 {
@@ -191,9 +191,9 @@ namespace FFA.Empty.Empty.Network.Client
                 }
 
             }
-            //catch (Exception e)
+            catch (Exception e)
             {
-            //    GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
+                GD.Print("[LocalClient] Incoherent data,protocole : " + data[0] + " threw exception : " + e);
             }
         }
 
